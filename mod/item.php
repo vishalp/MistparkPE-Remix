@@ -5,6 +5,8 @@ function item_post(&$a) {
 	if((! local_user()) && (! remote_user()))
 		return;
 
+
+
 	require_once('include/security.php');
 
 	$uid = $_SESSION['uid'];
