@@ -230,7 +230,7 @@ function post_remote($a,$arr) {
 	}
 
 	$r = q("SELECT `id` FROM `item` WHERE `uri` = '%s' LIMIT 1",
-		$arr['uri'],
+		$arr['uri']
 	);
 	if(count($r))
 		$current_post = $r[0]['id'];

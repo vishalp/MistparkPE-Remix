@@ -1,6 +1,6 @@
 <?php
 
-print_r($argv);
+
 require_once("boot.php");
 
 $a = new App;

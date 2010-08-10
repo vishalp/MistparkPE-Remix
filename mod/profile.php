@@ -111,7 +111,7 @@ function profile_content(&$a, $update = false) {
 			return $o;
 		}
 
-		if(can_write_wall($a,$a->profile['profile_uid'])) {
+		if(can_write_wall($a,1)) {
 			$tpl = file_get_contents('view/jot-header.tpl');
 	
 			$a->page['htmlhead'] .= replace_macros($tpl, array('$baseurl' => $a->get_baseurl()));
@@ -125,10 +125,10 @@ function profile_content(&$a, $update = false) {
 			$o .= replace_macros($tpl,array(
 				'$baseurl' => $a->get_baseurl(),
 				'$return_path' => $a->cmd,
-				'$visitor' => (($_SESSION['uid'] == $a->profile['profile_uid']) ? 'block' : 'none'),
+				'$visitor' => (($_SESSION['uid'] == 1) ? 'block' : 'none'),
 				'$lockstate' => $lockstate,
-				'$acl' => (($_SESSION['uid'] == $a->profile['profile_uid']) ? populate_acl($a->user) : ''),
-				'$profile_uid' => $a->profile['profile_uid']
+				'$acl' => (($_SESSION['uid'] == 1) ? populate_acl($a->user) : ''),
+				'$profile_uid' => 1
 			));
 		}
 
@@ -185,7 +185,7 @@ function profile_content(&$a, $update = false) {
 	$r = q("SELECT `item`.*, `item`.`id` AS `item_id`, 
 		`contact`.`name`, `contact`.`photo`, `contact`.`url`, 
 		`contact`.`thumb`, `contact`.`dfrn-id`, `contact`.`self`, 
-		`contact`.`id` AS `cid`, `contact`.`uid` AS `contact-uid`
+		`contact`.`id` AS `cid`
 		FROM `item` LEFT JOIN `contact` ON `contact`.`id` = `item`.`contact-id`
 		WHERE `item`.`visible` = 1 AND `item`.`deleted` = 0
 		AND NOT `item`.`type` IN ( 'remote', 'net-comment') AND `contact`.`blocked` = 0 AND `contact`.`pending` = 0
@@ -213,7 +213,7 @@ function profile_content(&$a, $update = false) {
 			
 			$redirect_url = $a->get_baseurl() . '/redir/' . $item['cid'] ;
 			
-			if(can_write_wall($a,1) {
+			if(can_write_wall($a,1)) {
 				if($item['last-child']) {
 					$comment = replace_macros($cmnt_tpl,array(
 						'$return_path' => $_SESSION['return_url'],

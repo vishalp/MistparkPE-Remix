@@ -99,7 +99,7 @@ function profiles_post(&$a) {
 			`romance` = '%s',
 			`work` = '%s',
 			`education` = '%s'
-			WHERE `id` = %d AND `uid` = %d LIMIT 1",
+			WHERE `id` = %d LIMIT 1",
 			dbesc($profile_name),
 			dbesc($name),
 			dbesc($gender),
@@ -124,12 +124,11 @@ function profiles_post(&$a) {
 			dbesc($romance),
 			dbesc($work),
 			dbesc($education),
-			intval($a->argv[1]),
-			intval($_SESSION['uid'])
+			intval($a->argv[1])
 		);
 
 		if($r)
-			$_SESSION['sysmsg'] .= "Profile updated." . EOL;
+			notice( t("Profile updated.") . EOL);
 
 
 		if($is_default) {
@@ -261,7 +260,7 @@ function profiles_content(&$a) {
 			intval($a->argv[1])
 		);
 		if(! count($r)) {
-			notice('Profile not found.') . EOL);
+			notice( t('Profile not found.') . EOL);
 			return;
 		}
 
@@ -271,11 +270,9 @@ function profiles_content(&$a) {
 		require_once('view/profile_selectors.php');
 
 		$tpl = file_get_contents('view/profed_head.tpl');
-		$opt_tpl = file_get_contents("view/profile-in-directory.tpl");
-		$profile_in_dir = replace_macros($opt_tpl,array(
-			'$yes_selected' => (($r[0]['publish']) ? " checked=\"checked\" " : ""),
-			'$no_selected' => (($r[0]['publish'] == 0) ? " checked=\"checked\" " : "")
-		));
+
+
+		$profile_in_dir = '';
 
 		$opt_tpl = file_get_contents("view/profile-hide-friends.tpl");
 		$hide_friends = replace_macros($opt_tpl,array(

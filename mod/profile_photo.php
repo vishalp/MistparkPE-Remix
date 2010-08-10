@@ -42,10 +42,9 @@ function profile_photo_post(&$a) {
 		$srcY = $_POST['ystart'];
 		$srcW = $_POST['xfinal'] - $srcX;
 		$srcH = $_POST['yfinal'] - $srcY;
-//dbg(3);
-		$r = q("SELECT * FROM `photo` WHERE `resource-id` = '%s' AND `uid` = %d AND `scale` = %d LIMIT 1",
+
+		$r = q("SELECT * FROM `photo` WHERE `resource-id` = '%s' AND `scale` = %d LIMIT 1",
 			dbesc($image_id),
-			dbesc($_SESSION['uid']),
 			intval($scale));
 
 		if(count($r)) {
@@ -55,28 +54,26 @@ function profile_photo_post(&$a) {
 			$im = new Photo($base_image['data']);
 			$im->cropImage(175,$srcX,$srcY,$srcW,$srcH);
 
-			$r = $im->store($_SESSION['uid'], 0, $base_image['resource-id'],$base_image['filename'], t('Profile Photos'), 4, 1);
+			$r = $im->store(0, $base_image['resource-id'],$base_image['filename'], t('Profile Photos'), 4, 1);
 
 			if($r === false)
 				notice ( t('Image size reduction (175) failed.') . EOL );
 
 			$im->scaleImage(80);
 
-			$r = $im->store($_SESSION['uid'], 0, $base_image['resource-id'],$base_image['filename'], t('Profile Photos'), 5, 1);
+			$r = $im->store(0, $base_image['resource-id'],$base_image['filename'], t('Profile Photos'), 5, 1);
 			
 			if($r === false)
 				notice( t('Image size reduction (80) failed.') . EOL );
 
 			// Unset the profile photo flag from any other photos I own
 
-			$r = q("UPDATE `photo` SET `profile` = 0 WHERE `profile` = 1 AND `resource-id` != '%s' AND `uid` = %d",
-				dbesc($base_image['resource-id']),
-				intval($_SESSION['uid'])
+			$r = q("UPDATE `photo` SET `profile` = 0 WHERE `profile` = 1 AND `resource-id` != '%s' ",
+				dbesc($base_image['resource-id'])
 			);
 
-			$r = q("UPDATE `contact` SET `avatar-date` = '%s' WHERE `self` = 1 AND `uid` = %d LIMIT 1",
-				dbesc(datetime_convert()),
-				intval($_SESSION['uid'])
+			$r = q("UPDATE `contact` SET `avatar-date` = '%s' WHERE `self` = 1 LIMIT 1",
+				dbesc(datetime_convert())
 			);
 
 		}
@@ -113,7 +110,7 @@ function profile_photo_post(&$a) {
 
 	$smallest = 0;
 
-	$r = $ph->store($_SESSION['uid'], 0 , $hash, $filename, t('Profile Photos'), 0 );	
+	$r = $ph->store(0 , $hash, $filename, t('Profile Photos'), 0 );	
 
 	if($r)
 		notice( t('Image uploaded successfully.') . EOL );
@@ -122,7 +119,7 @@ function profile_photo_post(&$a) {
 
 	if($width > 640 || $height > 640) {
 		$ph->scaleImage(640);
-		$r = $ph->store($_SESSION['uid'], 0 , $hash, $filename, t('Profile Photos'), 1 );	
+		$r = $ph->store(0 , $hash, $filename, t('Profile Photos'), 1 );	
 
 		if($r === false)
 			notice( t('Image size reduction (640) failed.') . EOL );

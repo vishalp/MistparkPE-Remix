@@ -22,7 +22,7 @@ function notifications_post(&$a) {
 			$intro_id = $r[0]['id'];
 		}
 		else {
-			notice( t("Invalid request identifier.") . EOL;
+			notice( t("Invalid request identifier.") . EOL);
 			return;
 		}
 		if($_POST['submit'] == 'Discard') {
@@ -67,7 +67,7 @@ function notifications_content(&$a) {
 
 	$r = q("SELECT `intro`.`id` AS `intro-id`, `intro`.*, `contact`.* 
 		FROM `intro` LEFT JOIN `contact` ON `intro`.`contact-id` = `contact`.`id`
-		WHERE `intro`.`blocked` - 0 $sql_extra ");
+		WHERE `intro`.`blocked` = 0 $sql_extra ");
 
 	if(($r !== false) && (count($r))) {
 

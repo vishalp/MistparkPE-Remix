@@ -102,7 +102,7 @@ function photos_post(&$a) {
 			$str_res = implode(',', $res);
 
 			q("DELETE FROM `photo` WHERE `resource-id` IN ( $str_res ) ");
-			);
+
 			$r = q("SELECT `parent-uri` FROM `item` WHERE `resource-id` IN ( $str_res ) ");
 			if(count($r)) {
 				foreach($r as $rr) {

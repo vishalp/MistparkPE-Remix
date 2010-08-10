@@ -44,7 +44,7 @@ function register_post(&$a) {
 
 
 	$new_password = trim($_POST['password']);
-	$verify = trim($_POST['password2']);
+	$verify = trim($_POST['verify']);
 	if($new_password != $verify) {
 		notice( t('Passwords do not match.') . EOL);
 		return;
@@ -130,8 +130,8 @@ function register_post(&$a) {
 
 
 	}
-
-	return;
+	goaway($a->get_baseurl());
+	return; // NOTREACHED
 }}
 
 
@@ -142,8 +142,9 @@ function register_post(&$a) {
 if(! function_exists('register_content')) {
 function register_content(&$a) {
 
-	if($a->config['register_policy'] == REGISTER_CLOSED) {
-		notice("Permission denied." . EOL);
+	$r = q("SELECT * FROM `user WHERE 1");
+	if(count($r) > 1) {
+		notice( t('Permission denied') . EOL);
 		return;
 	}
 

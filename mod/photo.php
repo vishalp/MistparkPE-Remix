@@ -97,7 +97,7 @@ function photo_init(&$a) {
 				$data = $r[0]['data'];
 			}
 		}
-	}
+	
 
 	if(x($data) === false) {
 		killme();

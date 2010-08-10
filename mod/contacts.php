@@ -106,7 +106,7 @@ function contacts_content(&$a) {
 			$readonly = (($orig_record[0]['readonly']) ? 0 : 1);
 			$r = q("UPDATE `contact` SET `readonly` = %d WHERE `id` = %d LIMIT 1",
 					intval($readonly),
-					intval($contact_id),
+					intval($contact_id)
 			);
 			if($r) {
 				$msg = t('Contact has been ') . (($readonly) ? t('ignored') : t('unignored')) . EOL ;

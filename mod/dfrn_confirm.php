@@ -142,7 +142,7 @@ function dfrn_confirm_post(&$a) {
 					'$email' => $r[0]['email'],
 					'$fn' => $r[0]['name'],
 					'$dfrn_url' => $r[0]['url']
-				);
+				));
 	
 				$res = mail($r[0]['email'], t("Introduction accepted at ") . $a->config['sitename'],
 					$email_tpl,t("From: Administrator@") . $_SERVER[SERVER_NAME] );
