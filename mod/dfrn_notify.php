@@ -84,7 +84,7 @@ function dfrn_notify_post(&$a) {
 				'$from' => $msg['from-name'],
 				'$title' => $msg['title'],
 				'$body' => strip_tags(bbcode($msg['body']))
-			);
+			));
 	
 			$res = mail($r[0]['email'], t("New mail received at ") . $a->config['sitename'],
 				$email_tpl,t("From: Administrator@") . $_SERVER[SERVER_NAME] );
