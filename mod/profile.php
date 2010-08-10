@@ -50,12 +50,6 @@ function profile_init(&$a) {
 
 	if((remote_user()) && ($a->argc > 2) && ($a->argv[2] == 'visit'))
 		$_SESSION['is_visitor'] = 1;
-	else {
-		unset($_SESSION['is_visitor']);
-		unset($_SESSION['visitor_id']);
-		if(! $_SESSION['uid'])
-			unset($_SESSION['authenticated']);
-	}
 
 	$profile = 0;
 	if((local_user()) && ($a->argc > 2) && ($a->argv[2] == 'view')) {
@@ -63,6 +57,8 @@ function profile_init(&$a) {
 		$profile = $a->argv[1];		
 	}
 	profile_load($a,$which,$profile);
+	$a->page['htmlhead'] .= '<link rel="alternate" type="application/atom+xml" href="' . $a->get_baseurl() . '/dfrn_poll/' . $which .'" />';
+
 	$a->page['htmlhead'] .= "<meta name=\"dfrn-template\" content=\"" . $a->get_baseurl() . "/profile/%s" . "\" />\r\n";
 	
 	$dfrn_pages = array('request', 'confirm', 'notify', 'poll');

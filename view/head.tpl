@@ -60,7 +60,10 @@
 		$.get('update_' + src + '?msie=' + ((msie) ? 1 : 0),function(data) {
 			$('.wall-item-outside-wrapper',data).each(function() {
 				var ident = $(this).attr('id');
-				if($('#' + ident).length == 0) { 
+				if($('#' + ident).length == 0) {
+					$('img',this).each(function() {
+						$(this).attr('src',$(this).attr('dst'));
+					});
 					$('#' + prev).after($(this));
 				}
 				else { 
