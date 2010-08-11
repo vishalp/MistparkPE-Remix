@@ -74,7 +74,7 @@ function dfrn_notify_post(&$a) {
 		$r = q("SELECT * FROM `user` LIMIT 1");
 
 		require_once('bbcode.php');
-		if((count($r)) && ($r[0]['notify_flags'] & NOTIFY_MAIL)) {
+		if((count($r)) && ($r[0]['notify-flags'] & NOTIFY_MAIL)) {
 			$tpl = file_get_contents('view/mail_received_eml.tpl');			
 			$email_tpl = replace_macros($tpl, array(
 				'$sitename' => $a->config['sitename'],
@@ -87,14 +87,10 @@ function dfrn_notify_post(&$a) {
 			));
 	
 			$res = mail($r[0]['email'], t("New mail received at ") . $a->config['sitename'],
-				$email_tpl,t("From: Administrator@") . $_SERVER[SERVER_NAME] );
-			if(!$res) {
-				notice( t("Email notification failed.") . EOL );
-			}
+				$email_tpl,t("From: Administrator@") . $a->get_hostname() );
 		}
-
 		xml_status(0);
-		return;
+		return; // NOTREACHED
 	}	
 
 	foreach($feed->get_items() as $item) {
