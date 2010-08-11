@@ -91,9 +91,9 @@ function group_content(&$a) {
 	}
 		
         if(($a->argc == 3) && ($a->argv[1] == 'drop')) {
-                if(intval($argv[2])) {
+                if(intval($a->argv[2])) {
                         $r = q("SELECT `name` FROM `group` WHERE `id` = %d LIMIT 1",
-                                intval($argv[2])
+                                intval($a->argv[2])
                         );
                         if(count($r))
                                 $result = group_rmv($r[0]['name']);

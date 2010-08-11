@@ -35,7 +35,7 @@ function group_rmv($name) {
 		);
 
 		// remove group
-		$r = q("UPDATE `group` SET `deleted` = 1 WHERE `id` = %d LIMIT 1",
+		$r = q("UPDATE `group` SET `deleted` = 1 WHERE `name` = '%s' LIMIT 1",
 			dbesc($name)
 		);
 
