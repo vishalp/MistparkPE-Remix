@@ -217,6 +217,9 @@ function profile_content(&$a, $update = false) {
 						'$id' => $item['item_id'],
 						'$parent' => $item['parent'],
 						'$profile_uid' =>  1,
+						'$mylink' => $a->contact['url'],
+						'$mytitle' => t('Me'),
+						'$myphoto' => $a->contact['thumb'],
 						'$ww' => ''
 					));
 				}

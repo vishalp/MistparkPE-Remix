@@ -217,7 +217,7 @@ if($argc < 2)
 				);
 				// FIXME update content if 'updated' changes
 				if(count($r)) {
-					$allow = $item->get_item_tags('http://purl.org/macgirvin/dfrn/1.0','comment-allow');
+					$allow = $item->get_item_tags( NAMESPACE_DFRN , 'comment-allow');
 					if($allow && $allow[0]['data'] != $r[0]['last-child']) {
 						$r = q("UPDATE `item` SET `last-child` = %d WHERE `uri` = '%s' LIMIT 1",
 							intval($allow[0]['data']),
@@ -241,7 +241,7 @@ if($argc < 2)
 					dbesc($item_id)
 				);
 				if(count($r)) {
-					$allow = $item->get_item_tags( NAMESPACE_DFRN,'comment-allow');
+					$allow = $item->get_item_tags( NAMESPACE_DFRN ,'comment-allow');
 					if($allow && $allow[0]['data'] != $r[0]['last-child']) {
 						$r = q("UPDATE `item` SET `last-child` = %d WHERE `uri` = '%s' LIMIT 1",
 							intval($allow[0]['data']),
