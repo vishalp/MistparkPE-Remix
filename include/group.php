@@ -35,7 +35,7 @@ function group_rmv($name) {
 		);
 
 		// remove group
-		$r = q("DELETE FROM `group` WHERE `id` = %d LIMIT 1",
+		$r = q("UPDATE `group` SET `deleted` = 1 WHERE `id` = %d LIMIT 1",
 			dbesc($name)
 		);
 
@@ -133,7 +133,7 @@ $o .= <<< EOT
 
 EOT;
 
-	$r = q("SELECT * FROM `group` ");
+	$r = q("SELECT * FROM `group` WHERE `deleted` = 0 ");
 	if(count($r)) {
 		foreach($r as $rr)
 			$o .= "	<li class=\"sidebar-group-li\"><a href=\"$each/{$rr['id']}\">{$rr['name']}</a></li>\r\n";

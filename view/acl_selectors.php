@@ -7,7 +7,7 @@ function group_select($selname,$selclass,$preselected = false,$size = 4) {
 
 	$o .= "<select name=\"{$selname}[]\" class=\"$selclass\" multiple=\"multiple\" size=\"$size\" />\r\n";
 
-	$r = q("SELECT * FROM `group` WHERE 1 ORDER BY `name` ASC");
+	$r = q("SELECT * FROM `group` WHERE `deleted` = 0 ORDER BY `name` ASC");
 
 	if(count($r)) {
 		foreach($r as $rr) {
