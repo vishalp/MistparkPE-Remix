@@ -36,7 +36,7 @@ function register_post(&$a) {
 
 
 	$r = q("SELECT * FROM `user WHERE 1");
-	if(count($r) > 1) {
+	if(count($r) >= 1) {
 		notice( t('Permission denied') . EOL);
 		return;
 	}
@@ -172,7 +172,7 @@ if(! function_exists('register_content')) {
 function register_content(&$a) {
 
 	$r = q("SELECT * FROM `user WHERE 1");
-	if(count($r) > 1) {
+	if(count($r) >= 1) {
 		notice( t('Permission denied') . EOL);
 		return;
 	}
