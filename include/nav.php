@@ -4,13 +4,10 @@ if(x($_SESSION['uid'])) {
 		$a->page['nav'] .= '<a id="nav-logout-link" class="nav-link" href="logout">' . t('Logout') . "</a>\r\n";
 }
 else {
-		$a->page['nav'] .= '<a id="nav-login-link" class="nav-link" href="login">' . t('Login') . "</a>\r\n";
+		$a->page['nav'] .= '<a id="nav-login-link" class="nav-login-link" href="login">' . t('Login') . "</a>\r\n";
 }
 
 	$a->page['nav'] .= "<span id=\"nav-link-wrapper\" >\r\n";
-
-	if(($a->module != 'home') && (! (local_user()))) 
-		$a->page['nav'] .= '<a id="nav-home-link" class="nav-commlink" href="">' . t('Home') . "</a>\r\n";
 
 
 	if(x($_SESSION,'uid')) {
