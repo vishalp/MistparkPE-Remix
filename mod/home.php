@@ -7,7 +7,7 @@ function home_init(&$a) {
 	if(count($r))
 		goaway( $a->get_baseurl() . "/profile/" . $r[0]['nickname'] );
 	else
-		goaway( $a->get_baseurl . "/register" );
+		goaway( $a->get_baseurl() . "/register" );
 
 }}
 
