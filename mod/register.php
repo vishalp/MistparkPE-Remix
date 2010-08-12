@@ -1,5 +1,33 @@
 <?php
 
+if(! function_exists('register_init')) {
+function register_init(&$a) {
+
+$a->page['htmlhead'] .= <<< EOT
+<script type="text/javascript" >
+	$(document).ready(function() {
+		var sawspace = false;
+
+		$('#register-name').bind('keyup',function(event) {
+			if(event.keyCode == '32') {
+				sawspace = true;
+			}
+			else {
+				if(! sawspace)
+					$('#register-nickname').val($('#register-name').val().toLowerCase());
+			}
+		});
+	});
+
+</script>
+
+
+EOT;
+
+
+}};
+
+
 if(! function_exists('register_post')) {
 function register_post(&$a) {
 
@@ -27,6 +55,8 @@ function register_post(&$a) {
 
 	$err = '';
 
+	// TODO fix some of these regex's for int'l/utf-8.
+
 	if(!eregi('[A-Za-z0-9._%-]+@[A-Za-z0-9._%-]+\.[A-Za-z]{2,6}',$email))
 		$err .= t(' Not a valid email address.');
 	if(strlen($username) > 48)
@@ -41,7 +71,6 @@ function register_post(&$a) {
 		notice( $err . EOL );
 		return;
 	}
-
 
 	$new_password = trim($_POST['password']);
 	$verify = trim($_POST['verify']);
