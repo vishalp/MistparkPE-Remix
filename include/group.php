@@ -29,10 +29,21 @@ function group_rmv($name) {
 		if(! $group_id)
 			return false;
 
-		// remove all members
-		$r = q("DELETE FROM `group_member` WHERE `gid` = %d ",
-			intval($group_id)
-		);
+
+		// Removing a group has broad security implications for posts that were created with this
+		// group in their ACL. The posts could suddenly be made visible to somebody who
+		// was not authorised to see them before. We can't take the group out of the ACL's
+		// because this could inadvertantly make a post public which was restricted.
+
+		// So we are going to keep the group in place, but hide it so you can't use it any more.
+		// All _existing_ post permissions remain intact, you just can't use this group going
+		// forward. Since this is a trade-off solution, we should probably document it
+		// on the page and suggest that if you want to affect already published posts, you should edit 
+		// the group membership before "deleting" it.
+
+//		$r = q("DELETE FROM `group_member` WHERE `gid` = %d ",
+//			intval($group_id)
+//		);
 
 		// remove group
 		$r = q("UPDATE `group` SET `deleted` = 1 WHERE `name` = '%s' LIMIT 1",
@@ -42,7 +53,6 @@ function group_rmv($name) {
 		$ret = $r;
 
 	}
-	// TODO!! remove this group from all content ACL's !!
 
 	return $ret;
 }
