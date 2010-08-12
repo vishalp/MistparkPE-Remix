@@ -63,7 +63,7 @@ function network_content(&$a, $update = false) {
 	// desired. 
 
 	$sql_extra = ''; 
-dbg(3);
+
 	if($group) {
 		$r = q("SELECT `name`, `id` FROM `group` WHERE `id` = %d LIMIT 1",
 			intval($group)
