@@ -63,7 +63,7 @@ function network_content(&$a, $update = false) {
 	// desired. 
 
 	$sql_extra = ''; 
-
+dbg(3);
 	if($group) {
 		$r = q("SELECT `name`, `id` FROM `group` WHERE `id` = %d LIMIT 1",
 			intval($group)
@@ -76,8 +76,7 @@ function network_content(&$a, $update = false) {
 
 		$contacts = expand_groups(array($group));
 		$contact_str = implode(',',$contacts);
-		$sql_extra = dbesc(" AND `item`.`parent` IN 
-			( SELECT `parent` FROM `item` WHERE `id` = `parent` AND `contact-id` IN ( $contact_str )) ");
+		$sql_extra = dbesc(" AND `item`.`parent` IN ( SELECT `parent` FROM `item` WHERE `id` = `parent` AND `contact-id` IN ( $contact_str )) ");
 		$o = '<h4>' . t('Group: ') . $r[0]['name'] . '</h4>' . $o;
 	}
 
