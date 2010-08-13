@@ -67,6 +67,8 @@ function dfrn_notify_post(&$a) {
 		$msg['parent-uri'] = notags(unxmlify($base['in-reply-to'][0]['data']));
 		$msg['created'] = datetime_convert(notags(unxmlify('UTC','UTC',$base['sentdate'][0]['data'])));
 
+		dbesc_array($msg);
+
 		$r = q("INSERT INTO `mail` (`" . implode("`, `", array_keys($msg)) 
 			. "`) VALUES ('" . implode("', '", array_values($msg)) . "')" );
 
