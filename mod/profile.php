@@ -171,7 +171,8 @@ function profile_content(&$a, $update = false) {
 	$r = q("SELECT COUNT(*) AS `total`
 		FROM `item` LEFT JOIN `contact` ON `contact`.`id` = `item`.`contact-id`
 		WHERE `item`.`visible` = 1 AND `item`.`deleted` = 0
-		AND NOT `item`.`type` IN ( 'remote', 'net-comment') AND `contact`.`blocked` = 0 AND `contact`.`pending` = 0 
+		AND `contact`.`blocked` = 0 AND `contact`.`pending` = 0
+		AND `item`.`parent` IN ( SELECT `parent` FROM `item` WHERE `id` = `parent` AND `type` != 'remote') 
 		$sql_extra ");
 
 	if(count($r))
@@ -184,7 +185,8 @@ function profile_content(&$a, $update = false) {
 		`contact`.`id` AS `cid`
 		FROM `item` LEFT JOIN `contact` ON `contact`.`id` = `item`.`contact-id`
 		WHERE `item`.`visible` = 1 AND `item`.`deleted` = 0
-		AND NOT `item`.`type` IN ( 'remote', 'net-comment') AND `contact`.`blocked` = 0 AND `contact`.`pending` = 0
+		AND `contact`.`blocked` = 0 AND `contact`.`pending` = 0
+		AND `item`.`parent` IN ( SELECT `parent` FROM `item` WHERE `id` = `parent` AND `type` != 'remote') 
 		$sql_extra
 		ORDER BY `parent` DESC, `id` ASC LIMIT %d ,%d ",
 		intval($a->pager['start']),
