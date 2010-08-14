@@ -23,7 +23,8 @@ function dfrn_notify_post(&$a) {
 
 	// find the local user who owns this relationship.
 
-	$r = q("SELECT * FROM `contact` WHERE `issued-id` = '%s' LIMIT 1",
+	$r = q("SELECT `contact`.*, `user`.* FROM `contact` LEFT JOIN `user` on `user`.`uid` = 1 
+		WHERE `issued-id` = '%s' LIMIT 1",
 		dbesc($dfrn_id)
 	);
 	if(! count($r)) {
@@ -72,23 +73,21 @@ function dfrn_notify_post(&$a) {
 		$r = q("INSERT INTO `mail` (`" . implode("`, `", array_keys($msg)) 
 			. "`) VALUES ('" . implode("', '", array_values($msg)) . "')" );
 
-		// send email notification if requested.
-		$r = q("SELECT * FROM `user` LIMIT 1");
 
 		require_once('bbcode.php');
-		if((count($r)) && ($r[0]['notify-flags'] & NOTIFY_MAIL)) {
+		if($importer['notify-flags'] & NOTIFY_MAIL) {
 			$tpl = file_get_contents('view/mail_received_eml.tpl');			
 			$email_tpl = replace_macros($tpl, array(
 				'$sitename' => $a->config['sitename'],
 				'$siteurl' =>  $a->get_baseurl(),
-				'$username' => $r[0]['username'],
-				'$email' => $r[0]['email'],
+				'$username' => $importer['username'],
+				'$email' => $importer['email'],
 				'$from' => $msg['from-name'],
 				'$title' => $msg['title'],
 				'$body' => strip_tags(bbcode($msg['body']))
 			));
 	
-			$res = mail($r[0]['email'], t("New mail received at ") . $a->config['sitename'],
+			$res = mail($importer['email'], t("New mail received at ") . $a->config['sitename'],
 				$email_tpl,t("From: Administrator@") . $a->get_hostname() );
 		}
 		xml_status(0);
@@ -146,7 +145,6 @@ function dfrn_notify_post(&$a) {
 			if($feed->get_item_quantity() == 1) {
 				// remote reply to our post. Import and then notify everybody else.
 				$datarray = get_atom_elements($item);
-				$urn = explode(':',$parent_urn);
 				$datarray['type'] = 'remote-comment';
 				$datarray['parent-uri'] = $parent_uri;
 				$datarray['contact-id'] = $importer['id'];
@@ -160,13 +158,30 @@ function dfrn_notify_post(&$a) {
 						intval($r[0]['parent'])
 					);
 				}
-				$r2 = q("UPDATE `item` SET `last-child` = 1 WHERE AND `id` = %d LIMIT 1",
+				$r2 = q("UPDATE `item` SET `last-child` = 1 WHERE `id` = %d LIMIT 1",
 						intval($posted_id)
 				);
 
 				$url = $a->get_baseurl();
 
 				proc_close(proc_open("php include/notifier.php $url comment-import $posted_id &", array(),$foo));
+
+				if(($importer['notify-flags'] & NOTIFY_COMMENT) && (! $importer['self'])) {
+					require_once('bbcode.php');
+					$from = stripslashes($datarray['author-name']);
+					$tpl = file_get_contents('view/cmnt_received_eml.tpl');                 
+					$email_tpl = replace_macros($tpl, array(
+						'$sitename' => $a->config['sitename'],
+						'$siteurl' =>  $a->get_baseurl(),
+						'$username' => $importer['username'],
+						'$email' => $importer['email'],
+						'$from' => $from,
+						'$body' => strip_tags(bbcode(stripslashes($datarray['body'])))
+					));
+
+					$res = mail($importer['email'], $from . t(" commented on your item at ") . $a->config['sitename'],
+						$email_tpl,t("From: Administrator@") . $a->get_hostname() );
+				}
 
 				xml_status(0);
 				return;
@@ -177,7 +192,7 @@ function dfrn_notify_post(&$a) {
 
 				$item_id = $item->get_id();
 
-				$r = q("SELECT `uid`, `last-child`, `edited` FROM `item` WHERE `uri` = '%s' LIMIT 1",
+				$r = q("SELECT `last-child`, `edited` FROM `item` WHERE `uri` = '%s' LIMIT 1",
 					dbesc($item_id)
 				);
 				// FIXME update content if 'updated' changes
@@ -195,6 +210,37 @@ function dfrn_notify_post(&$a) {
 				$datarray['parent-uri'] = $parent_uri;
 				$datarray['contact-id'] = $importer['id'];
 				$r = post_remote($a,$datarray);
+
+				// find out if our user is involved in this conversation and wants to be notified.
+			
+				if($importer['notify-flags'] & NOTIFY_COMMENT) {
+
+					$myconv = q("SELECT `author-link` FROM `item` WHERE `parent-uri` = '%s'",
+						dbesc($parent_uri)
+					);
+					if(count($myconv)) {
+						foreach($myconv as $conv) {
+							if($conv['author-link'] != $importer['url'])
+								continue;
+							require_once('bbcode.php');
+							$from = stripslashes($datarray['author-name']);
+							$tpl = file_get_contents('view/cmnt_received_eml.tpl');			
+							$email_tpl = replace_macros($tpl, array(
+								'$sitename' => $a->config['sitename'],
+								'$siteurl' =>  $a->get_baseurl(),
+								'$username' => $importer['username'],
+								'$email' => $importer['email'],
+								'$from' => $from,
+								'$body' => strip_tags(bbcode(stripslashes($datarray['body'])))
+							));
+
+							$res = mail($importer['email'], $from . t(" commented on an item at ") 
+								. $a->config['sitename'],
+								$email_tpl,t("From: Administrator@") . $a->get_hostname() );
+							break;
+						}
+					}
+				}
 				continue;
 			}
 		}
@@ -202,7 +248,7 @@ function dfrn_notify_post(&$a) {
 			// Head post of a conversation. Have we seen it? If not, import it.
 
 			$item_id = $item->get_id();
-			$r = q("SELECT `uid`, `last-child`, `edited` FROM `item` WHERE `uri` = '%s' LIMIT 1",
+			$r = q("SELECT `last-child`, `edited` FROM `item` WHERE `uri` = '%s' LIMIT 1",
 				dbesc($item_id)
 			);
 			if(count($r)) {

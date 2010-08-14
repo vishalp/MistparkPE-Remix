@@ -48,7 +48,7 @@ if($argc < 3)
 	else {
 		// find ancestors
 
-		$r = q("SELECT `parent`, `uid`, `edited` FROM `item` WHERE `id` = %d LIMIT 1",
+		$r = q("SELECT `parent`, `edited` FROM `item` WHERE `id` = %d LIMIT 1",
 			intval($item_id)
 		);
 		if(! count($r))
@@ -137,7 +137,7 @@ if($argc < 3)
 			'$thumb' => xmlify($owner['thumb']),
 			'$picdate' => xmlify(datetime_convert('UTC','UTC',$owner['avatar-date'] . '+00:00' , 'Y-m-d\TH:i:s\Z')) ,
 			'$uridate' => xmlify(datetime_convert('UTC','UTC',$owner['uri-date'] . '+00:00' , 'Y-m-d\TH:i:s\Z')) ,
-			'$namdate' => xmlify(datetime_convert('UTC','UTC',$owner['name-date'] . '+00:00' , 'Y-m-d\TH:i:s\Z')) ,
+			'$namdate' => xmlify(datetime_convert('UTC','UTC',$owner['name-date'] . '+00:00' , 'Y-m-d\TH:i:s\Z'))
 	));
 
 	if($cmd == 'mail') {
