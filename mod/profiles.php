@@ -162,9 +162,8 @@ function profiles_content(&$a) {
 	}
 
 	if(($a->argc > 2) && ($a->argv[1] == "drop") && intval($a->argv[2])) {
-		$r = q("SELECT * FROM `profile` WHERE `id` = %d AND `uid` = %d AND `is-default` = 0 LIMIT 1",
-			intval($a->argv[2]),
-			intval($_SESSION['uid'])
+		$r = q("SELECT * FROM `profile` WHERE `id` = %d AND `is-default` = 0 LIMIT 1",
+			intval($a->argv[2])
 		);
 		if(! count($r)) {
 			notice( t('Profile not found.') . EOL);
