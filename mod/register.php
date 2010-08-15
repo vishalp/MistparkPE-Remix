@@ -14,7 +14,7 @@ $a->page['htmlhead'] .= <<< EOT
 			}
 			else {
 				if(! sawspace)
-					$('#register-nickname').val($('#register-name').val().toLowerCase());
+					$('#register-nickname').val($('#register-name').val().replace(/[^a-zA-Z0-9].*/,'').toLowerCase());
 			}
 		});
 	});
@@ -35,7 +35,7 @@ function register_post(&$a) {
 	$blocked  = 0;
 
 
-	$r = q("SELECT * FROM `user WHERE 1");
+	$r = q("SELECT * FROM `user` WHERE 1");
 	if(count($r) >= 1) {
 		notice( t('Permission denied') . EOL);
 		return;
@@ -159,6 +159,8 @@ function register_post(&$a) {
 
 
 	}
+	$_SESSION['authenticated'] = true;
+	$_SESSION['uid'] = 1;
 	goaway($a->get_baseurl());
 	return; // NOTREACHED
 }}
@@ -171,7 +173,7 @@ function register_post(&$a) {
 if(! function_exists('register_content')) {
 function register_content(&$a) {
 
-	$r = q("SELECT * FROM `user WHERE 1");
+	$r = q("SELECT * FROM `user` WHERE 1");
 	if(count($r) >= 1) {
 		notice( t('Permission denied') . EOL);
 		return;

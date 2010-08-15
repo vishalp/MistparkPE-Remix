@@ -100,7 +100,8 @@ $a->page['content'] .= $debug_text;
 // build page
 
 // Navigation (menu) template
-require_once("nav.php");
+if($a->module != 'install' && $a->module != 'register')
+	require_once("nav.php");
 
 $page    = $a->page;
 $profile = $a->profile;

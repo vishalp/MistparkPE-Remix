@@ -17,11 +17,7 @@ php.ini file
 reasonable price. If your hosting provider doesn't allow Unix shell access, 
 you might have trouble getting everything to work.] 
 
-2. Edit htconfig.php and change system settings. Rename to .htconfig.php 
-
-3. Import database.sql into your database with mysql command line or via phpmyadmin
-
-4. Put this directory into the root of your web server document area.
+2. Put this directory into the root of your web server document area.
 
 	- If you copy the directory tree to your webserver, make sure
 	that you also copy .htaccess
@@ -35,11 +31,26 @@ you might have trouble getting everything to work.]
 	- Everything will work much better if you can dedicate a domain 
 	or subdomain so that you don't require an extra server path. 
 
-5. Navigate to your site with a web browser and register an account.
+3. Visit your website with a web browser and follow the instructions. 
 
-http://mywebsite.com/register
+4. *If* the automated installation fails for any reason, check the following:
 
-6. Set up a cron job or scheduled task to run "cd base/directory; php include/poller.php http://mywebsite.com" once every 5-10 minutes.
-Change base/directory and mywebsite.com as appropriate
+	4a. ".htconfig.php" exists 
+		If not, edit htconfig.php and change system settings. Rename 
+to .htconfig.php
+	4b. Database is populated.
+		If not, import the contents of "database.sql" with phpmyadmin 
+or mysql command line
+
+5. At this point you will register your account. Registration errors should all
+ be recoverable automatically. If you get any critical failure at this point, 
+wipe the database and start over. 
+
+
+6. Set up a cron job or scheduled task to run 
+	cd base/directory; /path/to/php include/poller.php http://mywebsite.com
+
+once every 5-10 minutes.
+Change base/directory, /path/to/php, and mywebsite.com as appropriate
  
 
