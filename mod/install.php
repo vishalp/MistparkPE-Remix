@@ -3,7 +3,7 @@
 
 function install_post(&$a) {
 
-	
+	global $db;
 
 	$dbhost = notags(trim($_POST['dbhost']));
 	$dbuser = notags(trim($_POST['dbuser']));
@@ -39,11 +39,25 @@ function install_post(&$a) {
 
 	$errors = load_database($db);
 	if(! $errors) {
-		notice( t('Database import succeeded. You still need to setup a scheduled task for the poller. Please see the file INSTALL.') . EOL );
+		// Our sessions normally are stored in the database. But as we have only managed 
+		// to get it bootstrapped milliseconds ago, we have to apply a bit of trickery so 
+		// that you'll see the following important notice (which is stored in the session). 
+
+		session_write_close();
+		require_once('session.php');
+		session_start();
+		$_SESSION['sysmsg'] = '';
+
+		notice( t('Database import succeeded.') . EOL 
+			. t('IMPORTANT: You will need to (manually) setup a scheduled task for the poller.') . EOL 
+			. t('Please see the file INSTALL.') . EOL );
 		goaway($a->get_baseurl());
 	}
 	else {
-		notice( t('Database import failed. You may need to import the file "database.sql" manually using phpmyadmin or mysql.') . EOL);
+		$db = null; // start fresh
+		notice( t('Database import failed.') . EOL
+			. t('You may need to import the file "database.sql" manually using phpmyadmin or mysql.') . EOL
+			. t('Please see the file INSTALL.') . EOL );
 	}
 }
 

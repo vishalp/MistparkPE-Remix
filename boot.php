@@ -2,13 +2,13 @@
 
 set_time_limit(0);
 
-define ('BUILD_ID', 1000 );
+define ( 'BUILD_ID', 1000 );
 
-define('EOL', "<br />\r\n");
+define ( 'EOL', "<br />\r\n");
 
-define('REGISTER_CLOSED',  0);
-define('REGISTER_APPROVE', 1);
-define('REGISTER_OPEN',    2);
+define ( 'REGISTER_CLOSED',  0);
+define ( 'REGISTER_APPROVE', 1);
+define ( 'REGISTER_OPEN',    2);
 
 define ( 'DIRECTION_ANY',  0);
 define ( 'DIRECTION_IN',   1);
@@ -43,10 +43,10 @@ class App {
 	public  $module;
 	public  $pager;
 	public  $strings;   
+	public  $path;
 
 	private $scheme;
 	private $hostname;
-	private $path;
 	private $baseurl;
 	private $db;
 

@@ -118,6 +118,13 @@ function register_post(&$a) {
 			);
 		if($r !== false && count($r))
 			$newuid = intval($r[0]['uid']);
+		if(! ((isset($a->path)) && (strlen($a->path)))) {
+			$_SESSION['sysmsg'] = ''; // Reset this if carrying over our session.
+			notice( t('Welcome to Mistpark.') . EOL 
+			. t('Please make a note of your personal profile locator,') . EOL
+			. t('which you will need when making introductions.') . EOL 
+			. t('Your profile locator is '). $nickname . '@'. $a->get_hostname() . EOL);
+		}
 	}
 	else {
 		notice( t('An error occurred during registration. Please try again.') . EOL );
