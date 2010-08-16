@@ -51,6 +51,7 @@ function settings_post(&$a) {
 		}
 	}
 
+	$theme = notags(trim($_POST['theme']));
 	$username = notags(trim($_POST['username']));
 	$email = notags(trim($_POST['email']));
 	$timezone = notags(trim($_POST['timezone']));
@@ -134,7 +135,7 @@ function settings_post(&$a) {
 
 
 
-	$r = q("UPDATE `user` SET `username` = '%s', `email` = '%s', `timezone` = '%s',  `allow_cid` = '%s', `allow_gid` = '%s', `deny_cid` = '%s', `deny_gid` = '%s', `notify-flags` = %d WHERE `uid` = %d LIMIT 1",
+	$r = q("UPDATE `user` SET `username` = '%s', `email` = '%s', `timezone` = '%s',  `allow_cid` = '%s', `allow_gid` = '%s', `deny_cid` = '%s', `deny_gid` = '%s', `notify-flags` = %d, `theme` = '%s'  WHERE `uid` = %d LIMIT 1",
 			dbesc($username),
 			dbesc($email),
 			dbesc($timezone),
@@ -143,18 +144,15 @@ function settings_post(&$a) {
 			dbesc($str_contact_deny),
 			dbesc($str_group_deny),
 			intval($notify),
+			dbesc($theme),
 			intval($_SESSION['uid'])
 	);
 	if($r)
 		notice( t('Settings updated.') . EOL);
 
+	$_SESSION['theme'] = $theme;
 
-	// Refresh the content display with new data
-
-	$r = q("SELECT * FROM `user` WHERE `uid` = %d LIMIT 1",
-		intval($_SESSION['uid']));
-	if(count($r))
-		$a->user = $r[0];
+	goaway($a->get_baseurl() . '/settings' );
 }
 		
 
@@ -174,6 +172,20 @@ function settings_content(&$a) {
 	$timezone = $a->user['timezone'];
 	$notify   = $a->user['notify-flags'];
 
+	if(! strlen($a->user['timezone']))
+		$timezone = date_default_timezone_get();
+
+	$theme_selector = '<select name="theme" id="theme-select" >';
+	$files = glob('view/theme/*');
+	if($files) {
+		foreach($files as $file) {
+			$f = basename($file);
+			$selected = (($f == $_SESSION['theme']) || ($f == 'default' && (! x($_SESSION,'theme')))
+				? ' selected="selected" ' : '' );
+			$theme_selector .= '<option val="' . basename($file) . '"' . $selected . '>' . basename($file) . '</option>';
+		}
+	}
+	$theme_selector .= '</select>';
 
 
 	$nickname_block = file_get_contents("view/settings_nick_set.tpl");
@@ -213,7 +225,8 @@ function settings_content(&$a) {
 		'$sel_notify2' => (($notify & NOTIFY_CONFIRM) ? ' checked="checked" ' : ''),
 		'$sel_notify3' => (($notify & NOTIFY_WALL)    ? ' checked="checked" ' : ''),
 		'$sel_notify4' => (($notify & NOTIFY_COMMENT) ? ' checked="checked" ' : ''),
-		'$sel_notify5' => (($notify & NOTIFY_MAIL)    ? ' checked="checked" ' : '')
+		'$sel_notify5' => (($notify & NOTIFY_MAIL)    ? ' checked="checked" ' : ''),
+		'$theme' => $theme_selector
 	));
 
 	return $o;
