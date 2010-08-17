@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS `contact` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `self` tinyint(1) NOT NULL DEFAULT '0',
+  `rel` tinyint(1) NOT NULL DEFAULT '0',
+  `network` char(255) NOT NULL,
   `name` char(255) NOT NULL,
   `photo` text NOT NULL, 
   `thumb` text NOT NULL,
