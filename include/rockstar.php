@@ -63,7 +63,7 @@
 		$src_aes_key = random_string();
 		$result = "";
 
-		openssl_private_encrypt($dfrn_id,$result,$a->user['prvkey']);
+		openssl_private_encrypt($dfrn_id,$result,$u[0]['prvkey']);
 
 		$params['dfrn_id'] = $result;
 		$params['public_key'] = $public_key;

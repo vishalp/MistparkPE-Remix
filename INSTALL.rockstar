@@ -1,0 +1,65 @@
+Mistpark RockStar Edition
+
+In order to install the Mistpark "RockStar" features, it is necessary to
+first complete the normal installation of Mistpark Personal Edition. Please
+follow the instructions in the file INSTALL.
+
+The next thing you should do is go to your "Settings" page and turn off
+all email notifications except perhaps "My introductions are confirmed" and
+"I receive a private message". This will cut down the email chatter from 
+anybody but your close friends. 
+
+Then you may require a couple of additional settings in the main 
+configuration file ".htconfig.php" - which would have been created during
+the main installation process.
+
+The first configuration setting 'rockstar' does a few things. First, it allows
+any of your contacts who are set to 'ignored' to post and comment on your 
+profile, but not send you private mail. Secondly, ignored contacts will not
+show up on the permission selectors when you post messages. 
+
+In the absence of this setting, 'ignored' contacts can see you and you can
+select them individually to receive posts, but they can't write anything on 
+your website or send you email. We will also skip over them when looking
+for new public posts by your friends.
+ 
+Put this line into .htconfig.php:
+
+$a->config['rockstar'] = true;
+
+The next setting tells the system that when auto-approving an introduction, to
+set the profile to "ignored" (which is known as 'readonly' in the database). 
+
+$a->config['rockstar-readonly'] = true;
+
+You may also choose a specific profile to display to fans that are 
+auto-approved. By default they will only see your public profile. 
+
+But should you do this, what we really need here is the number of the profile,
+not the name. Go to the "Profiles" page on your site and hover the mouse over
+the picture on the profile you wish to display to fans. In the status bar 
+you'll see the URL you would go to in order to edit that profile. 
+There is a number at the end of that url.
+
+Put that number in place of the '0', and put this line into your configuration
+file:
+
+$a->config['rockstar-profile'] = 0;
+
+
+One final piece of the puzzle. You need to setup a scheduled task to 
+automatically approve any introductions that arrive, so that you won't have
+to deal with them personally. Use the same procedure you used to set up the 
+poller process in the main installation, except change the command to run:
+
+	 cd /my/home/directory; /path/to/php include/rockstar.php
+
+Change the values of /my/home/directory and /path/to/php to match the poller
+setup. You may run this at any convenient interval. Once an hour is probably
+adequate. On a Linux/Mac, the crontab entry would be something like
+
+10 * * * * cd /my/home/directory; /path/to/php include/rockstar.php
+
+which would run every hour at 10 minutes past the hour. 
+
+  
