@@ -45,6 +45,9 @@ function contact_select($selname, $selclass, $preselected = false, $size = 4, $p
 		$o .= "<select name=\"{$selname}[]\" class=\"$selclass\" multiple=\"multiple\" size=\"$size\" />\r\n";
 	}
 
+	// ignore readonly contacts when operating in celebrity mode -
+	// the selector HTML could grow quite large and affect a lot of pages
+
 	if(x($a->config,'rockstar'))
 		$sql_extra .= " AND `readonly` = 0 ";
 
