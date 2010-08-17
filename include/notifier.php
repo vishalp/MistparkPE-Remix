@@ -13,19 +13,18 @@ $db = new dba($db_host, $db_user, $db_pass, $db_data, $install);
 require_once("session.php");
 require_once("datetime.php");
 
-if($argc < 3)
+if($argc < 2)
 	exit;
 
-	$baseurl = $argv[1];
-	$a->set_baseurl($argv[1]);
+	$a->set_baseurl(get_config('system','url'));
 
-	$cmd = $argv[2];
+	$cmd = $argv[1];
 
 	switch($cmd) {
 
 		case 'mail':
 		default:
-			$item_id = intval($argv[3]);
+			$item_id = intval($argv[2]);
 			if(! $item_id)
 				killme();
 			break;

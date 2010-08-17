@@ -61,14 +61,14 @@ tables, so that you can start fresh.
 6. Set up a cron job or scheduled task to run the poller once every 5-10 
 minutes to pick up the recent "public" postings of your friends. Example:
 
-	cd base/directory; /path/to/php include/poller.php http://mywebsite.com
+	cd base/directory; /path/to/php include/poller.php
 
-Change base/directory, /path/to/php, and mywebsite.com as appropriate
+Change base/directory, and /path/to/php as appropriate
 
 If you are using a Linux server, run "crontab -e" and add a line like the 
 one shown, substituting for your unique paths and settings:
 
-*/5 * * * *	cd /home/myname/mywebsite; /usr/bin/php include/poller.php http://mywebsite.com 
+*/5 * * * *	cd /home/myname/mywebsite; /usr/bin/php include/poller.php
 
 You can generally find the location of PHP by executing "which php". If you 
 have troubles with this section please contact your hosting provider for 

@@ -162,10 +162,9 @@ function dfrn_notify_post(&$a) {
 						intval($posted_id)
 				);
 
-				$url = $a->get_baseurl();
 				$php_path = ((strlen($a->config['php_path'])) ? $a->config['php_path'] : 'php');
 
-				proc_close(proc_open("\"$php_path\" \"include/notifier.php\" \"$url\" \"comment-import\" \"$posted_id\" &", array(),$foo));
+				proc_close(proc_open("\"$php_path\" \"include/notifier.php\" \"comment-import\" \"$posted_id\" &", array(),$foo));
 
 				if(($importer['notify-flags'] & NOTIFY_COMMENT) && (! $importer['self'])) {
 					require_once('bbcode.php');
