@@ -32,14 +32,6 @@ function dfrn_notify_post(&$a) {
 		return; //NOTREACHED
 	}
 
-	// We aren't really interested in anything this person has to say. But be polite and make them 
-	// think we're listening intently by acknowledging receipt of their communications - which we quietly ignore.
-
-	if($r[0]['readonly']) {
-		xml_status(0);
-		return; //NOTREACHED
-	}
-		
 	$importer = $r[0];
 
 	$feed = new SimplePie();
@@ -51,6 +43,15 @@ function dfrn_notify_post(&$a) {
 
 	$rawmail = $feed->get_feed_tags( NAMESPACE_DFRN, 'mail' );
 	if(isset($rawmail[0]['child'][NAMESPACE_DFRN])) {
+
+		if($importer['readonly']) {
+			// We aren't receiving email from this person. But we will quietly ignore them
+			// rather than a blatant "go away" message.
+			xml_status(0);
+			return; //NOTREACHED
+		}
+
+
 		$ismail = true;
 		$base = $rawmail[0]['child'][NAMESPACE_DFRN];
 
@@ -93,6 +94,18 @@ function dfrn_notify_post(&$a) {
 		xml_status(0);
 		return; // NOTREACHED
 	}	
+
+
+	if($importer['readonly'] && (! x($a->config['rockstar']))) {
+
+		// This contact is readonly and we're going to ignore him/her, except if we're in
+		// RockStar configuration. Us rockstars wan't people to talk about us. We just don't 
+		// want to have to deal with them individually. So our "readonly" fans can post to 
+		// our wall and comment, but they can't send us email.
+
+		xml_status(0);
+		return; // NOTREACHED
+	}
 
 	foreach($feed->get_items() as $item) {
 
