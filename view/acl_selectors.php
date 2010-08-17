@@ -30,6 +30,7 @@ function group_select($selname,$selclass,$preselected = false,$size = 4) {
 
 function contact_select($selname, $selclass, $preselected = false, $size = 4, $privmail = false) {
 
+	global $a;
 	$o = '';
 
 	// When used for private messages, we limit correspondence to mutual friends and the selector
@@ -43,6 +44,9 @@ function contact_select($selname, $selclass, $preselected = false, $size = 4, $p
 		$sql_extra = '';
 		$o .= "<select name=\"{$selname}[]\" class=\"$selclass\" multiple=\"multiple\" size=\"$size\" />\r\n";
 	}
+
+	if(x($a->config,'rockstar'))
+		$sql_extra .= " AND `readonly` = 0 ";
 
 	$r = q("SELECT `id`, `name`, `url`  FROM `contact` 
 		WHERE `self` = 0 AND `blocked` = 0 AND `pending` = 0 
