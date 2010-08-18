@@ -277,7 +277,7 @@ function item_content(&$a) {
 
 			// delete the item
 
-			$r = q("UPDATE `item` SET `deleted` = 1, `edited` = '%s' WHERE `id` = %d LIMIT 1",
+			$r = q("UPDATE `item` SET `deleted` = 1, `body` = '', `edited` = '%s' WHERE `id` = %d LIMIT 1",
 				dbesc(datetime_convert()),
 				intval($item['id'])
 			);
@@ -297,7 +297,7 @@ function item_content(&$a) {
 			// If it's the parent of a comment thread, kill all the kids
 
 			if($item['uri'] == $item['parent-uri']) {
-				$r = q("UPDATE `item` SET `deleted` = 1, `edited` = '%s' 
+				$r = q("UPDATE `item` SET `deleted` = 1, `edited` = '%s', `body` = '' 
 					WHERE `parent-uri` = '%s' ",
 					dbesc(datetime_convert()),
 					dbesc($item['parent-uri'])
