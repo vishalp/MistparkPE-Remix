@@ -199,11 +199,23 @@ function contacts_content(&$a) {
 	else
 		$sql_extra = " AND `blocked` = 0 ";
 
+	$search = ((x($_GET,'search')) ? notags(trim($_GET['search'])) : '');
+
 	$tpl = file_get_contents("view/contacts-top.tpl");
 	$o .= replace_macros($tpl,array(
 		'$hide_url' => ((strlen($sql_extra)) ? 'contacts/all' : 'contacts' ),
-		'$hide_text' => ((strlen($sql_extra)) ? t('Show Blocked Connections') : t('Hide Blocked Connections'))
+		'$hide_text' => ((strlen($sql_extra)) ? t('Show Blocked Connections') : t('Hide Blocked Connections')),
+		'$search' => $search,
+		'$finding' => (strlen($search) ? '<h4>' . t('Finding: ') . "'" . $search . "'" . '</h4>' : ""),
+		'$submit' => t('Find'),
+		'$cmd' => $a->cmd
+
 	)); 
+
+	if($search)
+		$search = dbesc($search.'*');
+	$sql_extra .= ((strlen($search)) ? " AND MATCH `name` AGAINST ('$search' IN BOOLEAN MODE) " : "");
+
 
 	switch($sort_type) {
 		case DIRECTION_BOTH :
@@ -226,7 +238,10 @@ function contacts_content(&$a) {
 	if(count($r))
 		$a->set_pager_total($r[0]['total']);
 
-	$r = q("SELECT * FROM `contact` WHERE `pending` = 0 $sql_extra $sql_extra2 ");
+	$r = q("SELECT * FROM `contact` WHERE `pending` = 0 $sql_extra $sql_extra2 ORDER BY `name` ASC LIMIT %d , %d ",
+		intval($a->pager['start']),
+		intval($a->pager['itemspage'])
+	);
 
 	if(count($r)) {
 
@@ -266,8 +281,8 @@ function contacts_content(&$a) {
 			));
 		}
 		$o .= '<div id="contact-edit-end"></div>';
-		$o .= paginate($a);
 
 	}
+	$o .= paginate($a);
 	return $o;
 }
