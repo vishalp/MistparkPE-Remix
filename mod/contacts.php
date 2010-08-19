@@ -186,7 +186,7 @@ function contacts_content(&$a) {
 			'$name' => $r[0]['name'],
 			'$dir_icon' => $dir_icon,
 			'$alt_text' => $alt_text,
-			'$url' => (($direction != DIRECTION_IN) ? "redir/{$r[0]['id']}" : $r[0]['url'] )
+			'$url' => (($direction != DIRECTION_OUT) ? "redir/{$r[0]['id']}" : $r[0]['url'] )
 
 		));
 
@@ -277,7 +277,7 @@ function contacts_content(&$a) {
 				'$dir_icon' => $dir_icon,
 				'$thumb' => $rr['thumb'], 
 				'$name' => $rr['name'],
-				'$url' => (($direction != DIRECTION_IN) ? "redir/{$rr['id']}" : $rr['url'] )
+				'$url' => (($direction != DIRECTION_OUT) ? "redir/{$rr['id']}" : $rr['url'] )
 			));
 		}
 		$o .= '<div id="contact-edit-end"></div>';

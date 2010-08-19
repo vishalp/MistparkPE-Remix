@@ -8,6 +8,7 @@ else {
 }
 
 	$a->page['nav'] .= "<span id=\"nav-link-wrapper\" >\r\n";
+	$a->page['nav'] .= '<a id="nav-directory-link" class="nav-link" href="http://dir.dfrn.org">' . t('Directory') . "</a>\r\n";
 
 
 	if(x($_SESSION,'uid')) {

@@ -4,13 +4,13 @@
 function profiles_post(&$a) {
 
 	if(! local_user()) {
-		notice( "Permission denied." . EOL);
+		notice( t('Permission denied.') . EOL);
 		return;
 	}
 
 	$namechanged = false;
 
-	if(($a->argc > 1) && ($a->argv[1] != "new") && intval($a->argv[1])) {
+	if(($a->argc > 1) && ($a->argv[1] != 'new') && intval($a->argv[1])) {
 		$orig = q("SELECT * FROM `profile` WHERE `id` = %d LIMIT 1",
 			intval($a->argv[1])
 		);
@@ -38,7 +38,6 @@ function profiles_post(&$a) {
 				$day = 0;
 		$dob = '0000-00-00';
 		$dob = sprintf('%04d-%02d-%02d',$year,$month,$day);
-
 			
 		$name = notags(trim($_POST['name']));
 
@@ -73,6 +72,8 @@ function profiles_post(&$a) {
 		$education = escape_tags(trim($_POST['education']));
 		if(x($_POST,'profile_in_directory'))
 			$publish = (($_POST['profile_in_directory'] == 1) ? 1: 0);
+		if(x($_POST,'profile_in_netdirectory'))
+			$net_publish = (($_POST['profile_in_netdirectory'] == 1) ? 1: 0);
 
 		$r = q("UPDATE `profile` 
 			SET `profile-name` = '%s',
@@ -128,28 +129,36 @@ function profiles_post(&$a) {
 		);
 
 		if($r)
-			notice( t("Profile updated.") . EOL);
-
+			notice( t('Profile updated.') . EOL);
 
 		if($is_default) {
 			$r = q("UPDATE `profile` 
-			SET `publish` = %d
+			SET `publish` = %d, `net-publish` = %d
 			WHERE `id` = %d LIMIT 1",
 			intval($publish),
+			intval($net_publish),
 			intval($a->argv[1])
 
 			);
 		}
+
+
+
 		if($namechanged && $is_default) {
 			$r = q("UPDATE `contact` SET `name-date` = '%s' WHERE `self` = 1 LIMIT 1",
 				dbesc(datetime_convert())
 			);
 		}
 
+		if($is_default) {
+			// Update global directory in background
+			$php_path = ((strlen($a->config['php_path'])) ? $a->config['php_path'] : 'php');
+			$url = $_SESSION['my_url'];
+			if($url && strlen(get_config('system','directory_submit_url')))
+				proc_close(proc_open("\"$php_path\" \"include/directory.php\" \"$url\" &",
+					array(),$foo));
+		}
 	}
-
-
-
 }
 
 
@@ -180,7 +189,7 @@ function profiles_content(&$a) {
 			intval($a->argv[2])
 		);
 		if($r)
-			notice( t("Profile deleted.") . EOL);
+			notice( t('Profile deleted.') . EOL);
 
 		goaway($a->get_baseurl() . '/profiles');
 		return; // NOTREACHED
@@ -195,7 +204,7 @@ function profiles_content(&$a) {
 		$r0 = q("SELECT `id` FROM `profile` WHERE 1");
 		$num_profiles = count($r0);
 
-		$name = "Profile-" . ($num_profiles + 1);
+		$name = t('Profile-') . ($num_profiles + 1);
 
 		$r1 = q("SELECT `name`, `photo`, `thumb` FROM `profile` WHERE `is-default` = 1 LIMIT 1");
 		
@@ -222,12 +231,12 @@ function profiles_content(&$a) {
 
 		$num_profiles = count($r0);
 
-		$name = "Profile-" . ($num_profiles + 1);
+		$name = t('Profile-') . ($num_profiles + 1);
 		$r1 = q("SELECT * FROM `profile` WHERE `id` = %d LIMIT 1",
 			intval($a->argv[2])
 		);
 		if(! count($r1)) {
-			notice("Profile unavailable to clone." . EOL);
+			notice( t('Profile unavailable to clone.') . EOL);
 			return;
 		}
 		unset($r1[0]['id']);
@@ -249,10 +258,9 @@ function profiles_content(&$a) {
 		notice( t('New profile created.') . EOL);
 		if(count($r3) == 1)
 			goaway($a->get_baseurl() . '/profiles/' . $r3[0]['id']);
-	goaway($a->get_baseurl() . '/profiles');
-	return; // NOTREACHED
+		goaway($a->get_baseurl() . '/profiles');
+		return; // NOTREACHED
 	}		 
-
 
 	if(intval($a->argv[1])) {
 		$r = q("SELECT * FROM `profile` WHERE `id` = %d LIMIT 1",
@@ -273,6 +281,18 @@ function profiles_content(&$a) {
 
 		$profile_in_dir = '';
 
+		if(strlen(get_config('system','directory_submit_url'))) {
+			$opt_tpl = file_get_contents("view/profile-in-netdir.tpl");
+
+			$profile_in_net_dir = replace_macros($opt_tpl,array(
+				'$yes_selected' => (($r[0]['net-publish']) ? " checked=\"checked\" " : ""),
+				'$no_selected' => (($r[0]['net-publish'] == 0) ? " checked=\"checked\" " : "")
+			));
+		}
+		else
+			$profile_in_net_dir = '';
+
+
 		$opt_tpl = file_get_contents("view/profile-hide-friends.tpl");
 		$hide_friends = replace_macros($opt_tpl,array(
 			'$yes_selected' => (($r[0]['hide-friends']) ? " checked=\"checked\" " : ""),
@@ -282,9 +302,6 @@ function profiles_content(&$a) {
 
 		$a->page['htmlhead'] .= replace_macros($tpl, array('$baseurl' => $a->get_baseurl()));
 		$a->page['htmlhead'] .= "<script type=\"text/javascript\" src=\"include/country.js\" ></script>";
-
-
-
 	
 
 		$is_default = (($r[0]['is-default']) ? 1 : 0);
@@ -294,7 +311,7 @@ function profiles_content(&$a) {
 			'$baseurl' => $a->get_baseurl(),
 			'$profile_id' => $r[0]['id'],
 			'$profile_name' => $r[0]['profile-name'],
-			'$default' => (($is_default) ? "<p id=\"profile-edit-default-desc\">This is your <strong>public</strong> profile.<br />It <strong>may</strong> be visible to anybody using the internet.</p>" : ""),
+			'$default' => (($is_default) ? '<p id="profile-edit-default-desc">' . t('This is your <strong>public</strong> profile.<br />It <strong>may</strong> be visible to anybody using the internet.') . '</p>' : ""),
 			'$name' => $r[0]['name'],
 			'$dob' => dob($r[0]['dob']),
 			'$hide_friends' => $hide_friends,
@@ -303,7 +320,7 @@ function profiles_content(&$a) {
 			'$region' => $r[0]['region'],
 			'$postal_code' => $r[0]['postal-code'],
 			'$country_name' => $r[0]['country-name'],
-			'$age' => ((intval($r[0]['dob'])) ? '(Age: '. age($r[0]['dob'],$a->user['timezone'],$a->user['timezone']) . ')' : ''),
+			'$age' => ((intval($r[0]['dob'])) ? '(' . t('Age: ') . age($r[0]['dob'],$a->user['timezone'],$a->user['timezone']) . ')' : ''),
 			'$gender' => gender_selector($r[0]['gender']),
 			'$marital' => marital_selector($r[0]['marital']),
 			'$sexual' => sexpref_selector($r[0]['sexual']),
@@ -320,7 +337,8 @@ function profiles_content(&$a) {
 			'$work' => $r[0]['work'],
 			'$education' => $r[0]['education'],
 			'$contact' => $r[0]['contact'],
-			'$profile_in_dir' => (($is_default) ? $profile_in_dir : '')
+			'$profile_in_dir' => (($is_default) ? $profile_in_dir : ''),
+			'$profile_in_net_dir' => (($is_default) ? $profile_in_net_dir : '')
 		));
 
 		return $o;

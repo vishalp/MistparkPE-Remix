@@ -739,7 +739,7 @@ function photos_content(&$a) {
 					$profile_url = $item['url'];
 
 
-					if(local_user() && (strlen($item['dfrn-id'])) && (! $item['self'] ))
+					if(local_user() && ($item['rel'] == DIRECTION_IN || $item['rel'] == DIRECTION_BOTH) && (! $item['self'] ))
 						$profile_url = $redirect_url;
 
  

@@ -1,19 +1,19 @@
 <?php
 
 
-require_once('boot.php');
+	require_once('boot.php');
 
-$a = new App;
+	$a = new App;
 
-@include('.htconfig.php');
-require_once('dba.php');
-$db = new dba($db_host, $db_user, $db_pass, $db_data, $install);
-	unset($db_host, $db_user, $db_pass, $db_data);
+	@include('.htconfig.php');
+	require_once('dba.php');
+	$db = new dba($db_host, $db_user, $db_pass, $db_data);
+		unset($db_host, $db_user, $db_pass, $db_data);
 
-require_once('session.php');
-require_once('datetime.php');
-require_once('simplepie/simplepie.inc');
-require_once('include/items.php');
+	require_once('session.php');
+	require_once('datetime.php');
+	require_once('simplepie/simplepie.inc');
+	require_once('include/items.php');
 
 	$a->set_baseurl(get_config('system','url'));
 
