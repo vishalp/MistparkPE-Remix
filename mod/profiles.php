@@ -70,10 +70,9 @@ function profiles_post(&$a) {
 		$romance = escape_tags(trim($_POST['romance']));
 		$work = escape_tags(trim($_POST['work']));
 		$education = escape_tags(trim($_POST['education']));
-		if(x($_POST,'profile_in_directory'))
-			$publish = (($_POST['profile_in_directory'] == 1) ? 1: 0);
-		if(x($_POST,'profile_in_netdirectory'))
-			$net_publish = (($_POST['profile_in_netdirectory'] == 1) ? 1: 0);
+
+		if(x($_POST,'hide-friends'))
+			$hide_friends = (($_POST['hide-friends'] == 1) ? 1: 0);
 
 		$r = q("UPDATE `profile` 
 			SET `profile-name` = '%s',
@@ -99,7 +98,8 @@ function profiles_post(&$a) {
 			`film` = '%s',
 			`romance` = '%s',
 			`work` = '%s',
-			`education` = '%s'
+			`education` = '%s',
+			`hide-friends` = %d
 			WHERE `id` = %d LIMIT 1",
 			dbesc($profile_name),
 			dbesc($name),
@@ -125,23 +125,12 @@ function profiles_post(&$a) {
 			dbesc($romance),
 			dbesc($work),
 			dbesc($education),
+			dbesc($hide_friends),
 			intval($a->argv[1])
 		);
 
 		if($r)
 			notice( t('Profile updated.') . EOL);
-
-		if($is_default) {
-			$r = q("UPDATE `profile` 
-			SET `publish` = %d, `net-publish` = %d
-			WHERE `id` = %d LIMIT 1",
-			intval($publish),
-			intval($net_publish),
-			intval($a->argv[1])
-
-			);
-		}
-
 
 
 		if($namechanged && $is_default) {
@@ -242,6 +231,7 @@ function profiles_content(&$a) {
 		unset($r1[0]['id']);
 		$r1[0]['is-default'] = 0;
 		$r1[0]['publish'] = 0;	
+		$r1[0]['net-publish'] = 0;
 		$r1[0]['profile-name'] = dbesc($name);
 
 		dbesc_array($r1[0]);
@@ -277,21 +267,6 @@ function profiles_content(&$a) {
 		require_once('view/profile_selectors.php');
 
 		$tpl = file_get_contents('view/profed_head.tpl');
-
-
-		$profile_in_dir = '';
-
-		if(strlen(get_config('system','directory_submit_url'))) {
-			$opt_tpl = file_get_contents("view/profile-in-netdir.tpl");
-
-			$profile_in_net_dir = replace_macros($opt_tpl,array(
-				'$yes_selected' => (($r[0]['net-publish']) ? " checked=\"checked\" " : ""),
-				'$no_selected' => (($r[0]['net-publish'] == 0) ? " checked=\"checked\" " : "")
-			));
-		}
-		else
-			$profile_in_net_dir = '';
-
 
 		$opt_tpl = file_get_contents("view/profile-hide-friends.tpl");
 		$hide_friends = replace_macros($opt_tpl,array(
@@ -337,8 +312,6 @@ function profiles_content(&$a) {
 			'$work' => $r[0]['work'],
 			'$education' => $r[0]['education'],
 			'$contact' => $r[0]['contact'],
-			'$profile_in_dir' => (($is_default) ? $profile_in_dir : ''),
-			'$profile_in_net_dir' => (($is_default) ? $profile_in_net_dir : '')
 		));
 
 		return $o;
