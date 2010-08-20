@@ -15,6 +15,7 @@ img {
 #sysmsg {
 	width: 600px;
 }
+
 code {
 	font-family: monospace;
 	white-space: pre;
@@ -32,7 +33,7 @@ blockquote:before {
 }
 
 body { 
-	background: #FEFEFE;
+	background: #DDDDDD;
 	color: #444444;
 	font-family: "Lucida Grande", Tahoma, sans-serif;
 	font-size: 90%;
@@ -110,14 +111,8 @@ footer {
 	border: 1px solid #FF8888;
 	background-color: #FFEEEE;
 	padding: 10px;
-	-moz-box-shadow: 5px 5px 5px #888888;
-	-webkit-box-shadow: 5px 5px 5px #888888;
-	box-shadow: 5px 5px 5px #888888;
-	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#888888')";
-	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#888888');
-
-
 }
+
 .nav-link {
 	float: right;
 	margin-left: 0px;
@@ -126,19 +121,6 @@ footer {
 	border: 1px solid #AAAAAA;
 	background: #F4F4F4;
 	font-size: 90%;
-	font-weight: bold;
-	-moz-box-shadow: 5px 5px 5px #888888;
-	-webkit-box-shadow: 5px 5px 5px #888888;
-	box-shadow: 5px 5px 5px #888888;
-	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#888888')";
-	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#888888');
-}
-.nav-login-link {
-	float: right;
-	margin-left: 0px;
-	margin-right: 10px;
-	padding: 3px;
-	font-size: 70%;
 	font-weight: bold;
 }
 
@@ -169,13 +151,8 @@ footer {
 	font-size: 90%;
 	font-weight: bold;
 	text-decoration: none;
-	-moz-box-shadow: 5px 5px 5px #888888;
-	-webkit-box-shadow: 5px 5px 5px #888888;
-	box-shadow: 5px 5px 5px #888888;
-	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#888888')";
-	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#888888');
-
 }
+
 #nav-end {
 	clear: both;
 }
@@ -191,19 +168,19 @@ footer {
 	margin-right: 20px;
 }
 
-#label-register-name, #label-register-email, #label-register-nickname, #label-register-password, #label-register-verify {
+#label-register-name, #label-register-email, #label-register-nickname {
 	float: left;
 	width: 350px;
 	margin-top: 10px;
 }
 
-#register-name, #register-email, #register-nickname, #register-password, #register-verify {
+#register-name, #register-email, #register-nickname {
 	float: left;
 	margin-top: 10px;
 	width: 150px;
 }
 
-#register-name-end, #register-email-end, #register-nickname-end, #register-password-end, #register-verify-end, #register-submit-end {
+#register-name-end, #register-email-end, #register-nickname-end, #register-submit-end {
 	clear: both;
 }
 #register-nickname-desc {
@@ -306,8 +283,8 @@ input#dfrn-url {
 #settings-username-end, 
 #settings-email-end, 
 #settings-nick-end, 
-#settings-timezone-end, 
-#settings-theme-end,
+#settings-timezone-end,
+#settings-theme-end, 
 #settings-password-end, 
 #settings-confirm-end,
 #notify1-end,
@@ -359,13 +336,10 @@ input#dfrn-url {
 	margin-top: 20px;
 	width: 207px;
 }
-
-
 #settings-notify-desc {
 	margin-top: 20px;
 	margin-bottom: 20px;
 }
-
 #settings-nick-desc {
 	width: 500px;
 }
@@ -442,16 +416,13 @@ input#dfrn-url {
 #view-contact-end {
 	clear: both;
 }
-
-
 #profile-edit-default-desc {
 	color: #FF0000;
 	border: 1px solid #FF8888;
 	background-color: #FFEEEE;
 	padding: 7px;
-
-
 }
+
 #profile-edit-clone-link-wrapper {
 	float: left;
 	margin-left: 50px;
@@ -461,7 +432,6 @@ input#dfrn-url {
 
 #profile-edit-drop-link-wrapper {
 	float: left;
-	
 }
 
 #profile-edit-links-end {
@@ -556,6 +526,10 @@ input#dfrn-url {
 	clear: both;
 }
 
+
+
+
+
 #gender-select, #marital-select, #sexual-select {
 	width: 220px;
 }
@@ -610,11 +584,7 @@ input#dfrn-url {
 .contact-entry-end {
 	clear: both;
 }
-/*
-.contact-entry-nav-end {
-	clear: both;
-}
-*/
+
 #contact-edit-end {
 	clear: both;
 }
@@ -625,7 +595,7 @@ input#dfrn-url {
 
 .wall-item-content-wrapper.comment {
 	margin-left: 50px;
-	background: #F7F7F7;
+	background: #CCCCCC;
 }
 
 .wall-item-photo-wrapper {
@@ -696,14 +666,14 @@ input#dfrn-url {
 
 .comment-edit-wrapper {
 	margin-top: 15px;
-	background: #F7F7F7;
+	background: #CCCCCC;
 	margin-left: 50px;
 }
 
 .comment-wwedit-wrapper {
 	margin-top: 15px;
-	background: #F7F7F7;
-	margin-left: 50px;
+	background: #CCCCCC;
+	margin-left: 250px;
 }
 
 .comment-edit-photo {
@@ -725,7 +695,6 @@ input#dfrn-url {
 	margin-left: 110px;
 	margin-top: 10px;
 }
-
 
 #profile-jot-submit-wrapper {
 	margin-top: 15px;
@@ -840,7 +809,7 @@ input#dfrn-url {
 }
 
 #directory-search-wrapper {
-	margin-left: 350px;
+	margin-top: 20px;
 	margin-right: 20px;
 	margin-bottom: 50px;
 }
@@ -1093,11 +1062,6 @@ input#dfrn-url {
 	background: #F4F4F4;
 	font-size: 0.8em;
 	font-weight: bold;
-	-moz-box-shadow: 5px 5px 5px #888888;
-	-webkit-box-shadow: 5px 5px 5px #888888;
-	box-shadow: 5px 5px 5px #888888;
-	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#888888')";
-	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#888888');
 }
 
 #profile-tabs-end {
@@ -1478,8 +1442,8 @@ input#dfrn-url {
 }
 
 .group-delete-wrapper {
-        float: right;
-        margin-right: 50px;
+	float: right;
+	margin-right: 50px;
 }
 
 #install-dbhost-label,
@@ -1487,10 +1451,10 @@ input#dfrn-url {
 #install-dbpass-label,
 #install-dbdata-label,
 #install-tz-desc {
-	float: left;
-	width: 250px;
-	margin-top: 10px;
-	margin-bottom: 10px;
+       float: left;
+       width: 250px;
+       margin-top: 10px;
+       margin-bottom: 10px;
 
 }
 
@@ -1498,9 +1462,9 @@ input#dfrn-url {
 #install-dbuser,
 #install-dbpass,
 #install-dbdata {
-	float: left;
-	width: 200px;
-	margin-left: 20px;
+       float: left;
+       width: 200px;
+       margin-left: 20px;
 }
 
 #install-dbhost-end,
@@ -1508,12 +1472,11 @@ input#dfrn-url {
 #install-dbpass-end,
 #install-dbdata-end,
 #install-tz-end {
-	clear: both;
+       clear: both;
 }
 
 #install-form select#timezone_select {
-	float: left;
-	margin-top: 18px;
-	margin-left: 20px;
+       float: left;
+       margin-top: 18px;
+       margin-left: 20px;
 }
-

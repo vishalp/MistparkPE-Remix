@@ -94,11 +94,10 @@ function profile_content(&$a, $update = false) {
 		}
 	}
 
-	if($update) {
-		$a->profile['profile_uid'] = 1;
-	}
+	$a->profile['profile_uid'] = 1;
 
-	else {
+
+	if(! $update) {
 		if(x($_GET,'tab'))
 			$tab = notags(trim($_GET['tab']));
 
@@ -257,9 +256,6 @@ function profile_content(&$a, $update = false) {
 
 			if(($item['contact-id'] == $_SESSION['visitor_id']) || $_SESSION['uid'])
 				$drop = replace_macros(file_get_contents('view/wall_item_drop.tpl'), array('$id' => $item['id']));
-
-
-
 
 			$o .= replace_macros($template,array(
 				'$id' => $item['item_id'],
