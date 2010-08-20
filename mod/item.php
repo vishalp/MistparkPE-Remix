@@ -71,6 +71,7 @@ function item_post(&$a) {
 
 	$title = notags(trim($_POST['title']));
 	$body = escape_tags(trim($_POST['body']));
+	$location = notags(trim($_POST['location']));
 
 	if(! strlen($body)) {
 		notice( t('Empty post discarded.') . EOL );
@@ -141,8 +142,8 @@ function item_post(&$a) {
 
 	$r = q("INSERT INTO `item` (`type`,`contact-id`,`owner-name`,`owner-link`,`owner-avatar`, 
 		`author-name`, `author-link`, `author-avatar`, `created`,
-		`edited`, `uri`, `title`, `body`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`)
-		VALUES( '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
+		`edited`, `uri`, `title`, `body`, `location`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`)
+		VALUES( '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
 		dbesc($post_type),
 		intval($contact_id),
 		dbesc($contact_record['name']),
@@ -156,6 +157,7 @@ function item_post(&$a) {
 		dbesc($uri),
 		dbesc($title),
 		dbesc($body),
+		dbesc($location),
 		dbesc($str_contact_allow),
 		dbesc($str_group_allow),
 		dbesc($str_contact_deny),
