@@ -123,6 +123,14 @@ footer {
 	font-weight: bold;
 }
 
+.nav-login-link {
+	float: right;
+	margin-left: 0px;
+	margin-right: 10px;
+	padding: 3px;
+	font-size: 70%;
+}
+
 
 .nav-ajax-left {
 	margin-left: 1px;
@@ -281,7 +289,8 @@ input#dfrn-url {
 
 #settings-username-end, 
 #settings-email-end, 
-#settings-nick-end, 
+#settings-nick-end,
+#settings-defloc-end, 
 #settings-timezone-end,
 #settings-theme-end, 
 #settings-password-end, 
@@ -297,7 +306,8 @@ input#dfrn-url {
 
 #settings-username-label, 
 #settings-email-label, 
-#settings-nick-label, 
+#settings-nick-label,
+#settings-defloc-label, 
 #settings-timezone-label, 
 #settings-theme-label,
 #settings-password-label, 
@@ -313,7 +323,8 @@ input#dfrn-url {
 
 #settings-username, 
 #settings-email, 
-#settings-nick, 
+#settings-nick,
+#settings-defloc, 
 #timezone-select, 
 #theme-select,
 #settings-password, 
@@ -327,7 +338,12 @@ input#dfrn-url {
 	margin-bottom: 20px;
 }
 
-#settings-theme-label {
+#settings-theme-label,
+#settings-defloc-label {
+	margin-top: 20px;
+}
+
+#settings-defloc {
 	margin-top: 20px;
 }
 

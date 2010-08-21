@@ -127,6 +127,7 @@ function profile_content(&$a, $update = false) {
 				$lockstate = 'unlock';
 			$o .= replace_macros($tpl,array(
 				'$baseurl' => $a->get_baseurl(),
+				'$defloc' => (($_SESSION['uid'] == 1) ? $a->user['default-location'] : ''),
 				'$return_path' => $a->cmd,
 				'$visitor' => (($_SESSION['uid'] == 1) ? 'block' : 'none'),
 				'$lockstate' => $lockstate,
