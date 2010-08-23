@@ -106,7 +106,8 @@ function photos_post(&$a) {
 			$r = q("SELECT `parent-uri` FROM `item` WHERE `resource-id` IN ( $str_res ) ");
 			if(count($r)) {
 				foreach($r as $rr) {
-					q("UPDATE `item` SET `deleted` = 1 WHERE `parent-uri` = '%s' ",
+					q("UPDATE `item` SET `deleted` = 1, `changed` = '%s' WHERE `parent-uri` = '%s' ",
+						dbesc(datetime_convert()),
 						dbesc($rr['parent-uri'])
 					);
 
@@ -137,7 +138,9 @@ function photos_post(&$a) {
 				dbesc($r[0]['resource-id'])
 			);
 			if(count($i)) {
-				q("UPDATE `item` SET `deleted` = 1 WHERE `parent-uri` = '%s' ",
+				q("UPDATE `item` SET `deleted` = 1, `edited` = '%s', `changed` = '%s'  WHERE `parent-uri` = '%s' ",
+					dbesc(datetime_convert()),
+					dbesc(datetime_convert()),
 					dbesc($i[0]['uri'])
 				);
 
@@ -198,16 +201,17 @@ function photos_post(&$a) {
 
 			$r = q("INSERT INTO `item` (`type`, `resource-id`, `contact-id`,
 				`owner-name`,`owner-link`,`owner-avatar`, `created`,
-				`edited`, `uri`, `parent-uri`, `title`, `body`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`)
-				VALUES( '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
+				`edited`, `changed`, `uri`, `parent-uri`, `title`, `body`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`)
+				VALUES( '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
 				dbesc('photo'),
 				dbesc($p[0]['resource-id']),			
 				intval($contact_record['id']),
 				dbesc($contact_record['name']),
 				dbesc($contact_record['url']),
 				dbesc($contact_record['thumb']),
-				datetime_convert(),
-				datetime_convert(),
+				dbesc(datetime_convert()),
+				dbesc(datetime_convert()),
+				dbesc(datetime_convert()),
 				dbesc($uri),
 				dbesc($uri),
 				dbesc($title),
@@ -232,8 +236,10 @@ function photos_post(&$a) {
 			}
 		}
 
-		$r = q("UPDATE `item` SET `tag` = '%s' WHERE `id` = %d LIMIT 1",
+		$r = q("UPDATE `item` SET `tag` = '%s', `edited` = '%s', `changed` = '%s' WHERE `id` = %d LIMIT 1",
 			dbesc($tags),
+			dbesc(datetime_convert()),
+			dbesc(datetime_convert()),
 			intval($item_id)
 		);
 
@@ -362,16 +368,17 @@ function photos_post(&$a) {
 
 
 	$r = q("INSERT INTO `item` (`type`, `resource-id`, `contact-id`,`owner-name`,`owner-link`,`owner-avatar`, `created`,
-		`edited`, `uri`, `parent-uri`, `title`, `body`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`, `visible`)
-		VALUES( '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d )",
+		`edited`, `changed`, `uri`, `parent-uri`, `title`, `body`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`, `visible`)
+		VALUES( '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d )",
 		dbesc('photo'),
 		dbesc($photo_hash),			
 		intval($contact_record['id']),
 		dbesc($contact_record['name']),
 		dbesc($contact_record['url']),
 		dbesc($contact_record['thumb']),
-		datetime_convert(),
-		datetime_convert(),
+		dbesc(datetime_convert()),
+		dbesc(datetime_convert()),
+		dbesc(datetime_convert()),
 		dbesc($uri),
 		dbesc($uri),
 		dbesc($title),
