@@ -190,7 +190,7 @@ function check_config(&$a) {
 			// Run any existing update scripts to bring the database up to current.
 
 			require_once('update.php');
-			for($x = $stored; $x <= $current; $x ++) {
+			for($x = $stored; $x < $current; $x ++) {
 				if(function_exists('update_' . $x)) {
 					$func = 'update_' . $x;
 					$func($a);
