@@ -175,13 +175,14 @@
 					dbesc($uri)
 				);
 				if(count($r)) {
-					if($r[0]['uri'] == $r[0]['parent-uri']) {
+					$item = $r[0];
+					if($item['uri'] == $item['parent-uri']) {
 						$r = q("UPDATE `item` SET `deleted` = 1, `edited` = '%s', `changed` = '%s',
 							`body` = '', `title` = ''
 							WHERE `parent-uri` = '%s'",
 							dbesc($when),
 							dbesc(datetime_convert()),
-							dbesc($r[0]['uri'])
+							dbesc($item['uri'])
 						);
 					}
 					else {
@@ -192,6 +193,23 @@
 							dbesc(datetime_convert()),
 							dbesc($uri)
 						);
+						if($item['last-child']) {
+							// ensure that last-child is set in case the comment that had it just got wiped.
+							$q("UPDATE `item` SET `last-child` = 0, `changed` = '%s' WHERE `parent-uri` = '%s' ",
+								dbesc(datetime_convert()),
+								dbesc($item['parent-uri'])
+							);
+							// who is the last child now? 
+							$r = q("SELECT `id` FROM `item` WHERE `parent-uri` = '%s' AND `type` != 'activity' AND `deleted` = 0 
+								ORDER BY `edited` DESC LIMIT 1",
+									dbesc($item['parent-uri'])
+							);
+							if(count($r)) {
+								q("UPDATE `item` SET `last-child` = 1 WHERE `id` = %d LIMIT 1",
+									intval($r[0]['id'])
+								);
+							}
+						}	
 					}
 				}	
 				continue;

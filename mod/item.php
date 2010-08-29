@@ -143,7 +143,7 @@ function item_post(&$a) {
 	$r = q("INSERT INTO `item` (`type`,`contact-id`,`owner-name`,`owner-link`,`owner-avatar`, 
 		`author-name`, `author-link`, `author-avatar`, `created`,
 		`edited`, `changed`, `uri`, `title`, `body`, `location`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`)
-		VALUES( '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
+		VALUES( '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
 		dbesc($post_type),
 		intval($contact_id),
 		dbesc($contact_record['name']),
@@ -278,7 +278,7 @@ function item_content(&$a) {
 
 		// check if logged in user is either the author or owner of this item
 
-		if(($_SESSION['visitor_id'] == $item['contact-id']) || ($_SESSION['uid'] == $item['uid'])) {
+		if(($_SESSION['visitor_id'] == $item['contact-id']) || ($_SESSION['uid'])) {
 
 			// delete the item
 
@@ -310,6 +310,22 @@ function item_content(&$a) {
 					dbesc($item['parent-uri'])
 				);
 				// ignore the result
+			}
+			else {
+				// ensure that last-child is set in case the comment that had it just got wiped.
+				q("UPDATE `item` SET `last-child` = 0, `changed` = '%s' WHERE `parent-uri` = '%s' ",
+					dbesc(datetime_convert()),
+					dbesc($item['parent-uri'])
+				);
+				// who is the last child now? 
+				$r = q("SELECT `id` FROM `item` WHERE `parent-uri` = '%s' AND `type` != 'activity' AND `deleted` = 0 ORDER BY `edited` DESC LIMIT 1",
+					dbesc($item['parent-uri'])
+				);
+				if(count($r)) {
+					q("UPDATE `item` SET `last-child` = 1 WHERE `id` = %d LIMIT 1",
+						intval($r[0]['id'])
+					);
+				}	
 			}
 
 			$drop_id = intval($item['id']);
