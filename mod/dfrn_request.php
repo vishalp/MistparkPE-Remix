@@ -156,7 +156,7 @@ function dfrn_request_post(&$a) {
 	// in $a->argv[1] and we should have their complete info in $a->profile.
 
 	if(! (is_array($a->profile) && count($a->profile))) {
-		notice(t("Profile unavailable.") . EOL);
+		notice( t('Profile unavailable.') . EOL);
 		return;
 	}
 
@@ -299,7 +299,7 @@ function dfrn_request_post(&$a) {
 				VALUES ( %d, 1, %d, '%s', '%s', '%s' )",
 				intval($contact_record['id']),
 				((x($_POST,'knowyou') && ($_POST['knowyou'] == 1)) ? 1 : 0),
-				dbesc(trim($_POST['dfrn-request-message'])),
+				dbesc(notags(trim($_POST['dfrn-request-message']))),
 				dbesc($hash),
 				dbesc(datetime_convert())
 			);
@@ -385,7 +385,10 @@ function dfrn_request_content(&$a) {
 						'$siteurl' => $a->get_baseurl(),
 						'$sitename' => $a->config['sitename']
 					));
-					$res = mail($r[0]['email'],t("Introduction received at ") . $a->config['sitename'],$email,t('From: Administrator@') . $_SERVER[SERVER_NAME] );
+					$res = mail($r[0]['email'],
+						t("Introduction received at ") . $a->config['sitename'],
+						$email,
+						t('From: Administrator@') . $_SERVER[SERVER_NAME] );
 					// This is a redundant notification - no point throwing errors if it fails.
 				}
 			}
