@@ -51,7 +51,7 @@ function photos_post(&$a) {
 
 
 
-	$r = q("SELECT * FROM `contact` LEFT JOIN `user` ON `user`.`uid` = 1  WHERE `self` = 1 LIMIT 1");
+	$r = q("SELECT `contact`.*, `user`.`nickname` FROM `contact` LEFT JOIN `user` ON `user`.`uid` = 1  WHERE `self` = 1 LIMIT 1");
 
 	$contact_record = $r[0];	
 

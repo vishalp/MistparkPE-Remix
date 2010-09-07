@@ -1,0 +1,33 @@
+
+Mistpark - Personal Edition
+Version 1.0
+
+Please see the file INSTALL for system requirements.
+
+Mistpark introduces a new generation of social networks. Personal Edition
+allows you to interact with other members of the Mistpark community using
+the DFRN (Distributed Friends and Relations Network) protocol. Say good-bye
+to Facebook and privacy issues. Say good-bye to Twitter and 140 characters.
+
+It's your network now. If social networking isn't what you thought it would 
+be, help us to make it better.  
+
+Mistpark Personal Edition supports a single individual in the network. Also 
+available from Mistpark Labs is Mistpark Server, which supports several
+hundred people using commodity hosting platforms.
+
+Mistpark is fully functional, however be aware that the supporting protocols
+are still undergoing development and new features will be rolled out in the
+coming weeks/months as these protocols mature. Version 2 is currently under
+development and is scheduled for alpha testing during September 2010.
+
+We also plan to provide gateways to other distributed networks (Diaspora,
+Federated Social Web, etc.) as other networks become viable. Currently 
+Diaspora has not yet released a product, and the Federated Social Web still
+does not have a privacy/security model that we can evaluate.
+
+We will be releasing online documentation and providing other resources in
+the months ahead at http://mistpark.com
+
+Welcome to your new social network. 
+
