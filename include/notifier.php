@@ -63,7 +63,9 @@
 			killme();
 	}
 
-	$r = q("SELECT * FROM `contact` WHERE `self` = 1 LIMIT 1");
+	$r = q("SELECT `contact`.*, `user`.`nickname` 
+		FROM `contact` LEFT JOIN `user` ON `user`.`uid` = 1 
+		WHERE `contact`.`self` = 1 LIMIT 1");
 
 	if(count($r))
 		$owner = $r[0];
@@ -125,10 +127,9 @@
 
 
 	$atom .= replace_macros($feed_template, array(
-			'$feed_id' => xmlify($a->get_baseurl()),
+			'$feed_id' => xmlify($a->get_baseurl() . '/profile/' . $owner['nickname'] ),
 			'$feed_title' => xmlify($owner['name']),
-			'$feed_updated' => xmlify(datetime_convert('UTC', 'UTC', 
-				$updated . '+00:00' , 'Y-m-d\TH:i:s\Z')) ,
+			'$feed_updated' => xmlify(datetime_convert('UTC', 'UTC', $updated . '+00:00' , 'Y-m-d\TH:i:s\Z')) ,
 			'$name' => xmlify($owner['name']),
 			'$profile_page' => xmlify($owner['url']),
 			'$photo' => xmlify($owner['photo']),
@@ -167,6 +168,9 @@
 						'$name' => xmlify($owner['name']),
 						'$profile_page' => xmlify($owner['url']),
 						'$thumb' => xmlify($owner['thumb']),
+						'$owner_name' => xmlify($item['owner-name']),
+						'$owner_profile_page' => xmlify($item['owner-link']),
+						'$owner_thumb' => xmlify($item['owner-avatar']),
 						'$item_id' => xmlify($item['uri']),
 						'$title' => xmlify($item['title']),
 						'$published' => xmlify(datetime_convert('UTC', 'UTC', 
