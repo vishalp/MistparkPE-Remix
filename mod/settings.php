@@ -40,7 +40,8 @@ function settings_post(&$a) {
 			$password = hash('whirlpool',$newpass);
 			$r = q("UPDATE `user` SET `password` = '%s' WHERE `uid` = %d LIMIT 1",
 				dbesc($password),
-				intval($_SESSION['uid']));
+				intval(get_uid())
+			);
 			if($r)
 				notice( t('Password changed.') . EOL);
 			else
