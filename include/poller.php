@@ -108,7 +108,7 @@
 		}
 
 		$final_dfrn_id = substr($final_dfrn_id, 0, strpos($final_dfrn_id, '.'));
-		if($final_dfrn_id != $idtosend)
+		if($final_dfrn_id != $idtosend) {
 			// did not decode properly - cannot trust this site 
 			continue;
 		}
