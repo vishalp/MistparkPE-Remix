@@ -76,6 +76,15 @@ function profile_photo_post(&$a) {
 				dbesc(datetime_convert())
 			);
 
+			// Update global directory in background
+			$php_path = ((strlen($a->config['php_path'])) ? $a->config['php_path'] : 'php');
+			$url = $_SESSION['my_url'];
+			if($url && strlen(get_config('system','directory_submit_url')))
+				proc_close(proc_open("\"$php_path\" \"include/directory.php\" \"$url\" &",
+					array(),$foo));
+
+
+
 		}
 		goaway($a->get_baseurl() . '/profiles');
 		return; // NOTREACHED
