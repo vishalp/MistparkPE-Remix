@@ -1,5 +1,7 @@
 <?php
 
+require_once('include/Contact.php');
+
 function contacts_init(&$a) {
 	require_once('include/group.php');
 	$a->page['aside'] .= group_side();
@@ -19,7 +21,7 @@ function contacts_post(&$a) {
 	);
 
 	if(! count($orig_record)) {
-		notice("Could not access contact record." . EOL);
+		notice( t('Could not access contact record.') . EOL);
 		goaway($a->get_baseurl() . '/contacts');
 		return; // NOTREACHED
 	}
@@ -95,10 +97,9 @@ function contacts_content(&$a) {
 					intval($contact_id)
 			);
 			if($r) {
-				$msg = t('Contact has been ') . (($blocked) ? t('blocked') : t('unblocked')) . EOL ;
-				notice($msg);
+				notice( t('Contact has been ') . (($blocked) ? t('blocked') : t('unblocked')) . EOL );
 			}
-			goaway($a->get_baseurl() ."/contacts/$contact_id");
+			goaway($a->get_baseurl() . '/contacts/' . $contact_id);
 			return; // NOTREACHED
 		}
 
@@ -109,25 +110,14 @@ function contacts_content(&$a) {
 					intval($contact_id)
 			);
 			if($r) {
-				$msg = t('Contact has been ') . (($readonly) ? t('ignored') : t('unignored')) . EOL ;
-				notice($msg);
+				notice( t('Contact has been ') . (($readonly) ? t('ignored') : t('unignored')) . EOL );
 			}
-			goaway($a->get_baseurl() ."/contacts/$contact_id");
+			goaway($a->get_baseurl() . '/contacts/' . $contact_id);
 			return; // NOTREACHED
 		}
 
 		if($cmd == 'drop') {
-			$r = q("DELETE FROM `contact` WHERE `id` = %d LIMIT 1",
-				intval($contact_id)
-			);
-
-			q("DELETE FROM `item` WHERE `contact-id` = %d ",
-					intval($contact_id)
-			);
-			q("DELETE FROM `photo` WHERE `contact-id` = %d ",
-					intval($contact_id)
-			);
-	
+			contact_remove($contact_id);
 			notice( t("Contact has been removed.") . EOL );
 			goaway($a->get_baseurl() . '/contacts');
 			return; // NOTREACHED
@@ -149,24 +139,24 @@ function contacts_content(&$a) {
 
 		$tpl = file_get_contents("view/contact_edit.tpl");
 
-		$direction = '';
-		if(strlen($r[0]['issued-id'])) {
-			if(strlen($r[0]['dfrn-id'])) {
-				$direction = DIRECTION_BOTH;
+		switch($r[0]['rel']) {
+			case DIRECTION_BOTH:
 				$dir_icon = 'images/lrarrow.gif';
 				$alt_text = t('Mutual Friendship');
-			}
-			else {
-				$direction = DIRECTION_IN;
+				break;
+			case DIRECTION_IN;
 				$dir_icon = 'images/larrow.gif';
 				$alt_text = t('is a fan of yours');
-			}
+				break;
+	
+			case DIRECTION_OUT;
+				$dir_icon = 'images/rarrow.gif';
+				$alt_text = t('you are a fan of');
+				break;
+			default:
+				break;
 		}
-		else {
-			$direction = DIRECTION_OUT;
-			$dir_icon = 'images/rarrow.gif';
-			$alt_text = t('you are a fan of');
-		}
+
 
 		$o .= replace_macros($tpl,array(
 			'$poll_interval' => contact_poll_interval($r[0]['priority']),
@@ -186,7 +176,7 @@ function contacts_content(&$a) {
 			'$name' => $r[0]['name'],
 			'$dir_icon' => $dir_icon,
 			'$alt_text' => $alt_text,
-			'$url' => (($direction != DIRECTION_OUT) ? "redir/{$r[0]['id']}" : $r[0]['url'] )
+			'$url' => (($r[0]['rel'] != DIRECTION_OUT) ? "redir/{$r[0]['id']}" : $r[0]['url'] )
 
 		));
 
@@ -250,24 +240,24 @@ function contacts_content(&$a) {
 		foreach($r as $rr) {
 			if($rr['self'])
 				continue;
-			$direction = '';
-			if(strlen($rr['issued-id'])) {
-				if(strlen($rr['dfrn-id'])) {
-					$direction = DIRECTION_BOTH;
+
+			switch($rr['rel']) {
+				case DIRECTION_BOTH:
 					$dir_icon = 'images/lrarrow.gif';
 					$alt_text = t('Mutual Friendship');
-				}
-				else {
-					$direction = DIRECTION_IN;
+					break;
+				case  DIRECTION_IN;
 					$dir_icon = 'images/larrow.gif';
 					$alt_text = t('is a fan of yours');
-				}
+					break;
+				case DIRECTION_OUT;
+					$dir_icon = 'images/rarrow.gif';
+					$alt_text = t('you are a fan of');
+					break;
+				default:
+					break;
 			}
-			else {
-				$direction = DIRECTION_OUT;
-				$dir_icon = 'images/rarrow.gif';
-				$alt_text = t('you are a fan of');
-			}
+
 
 			$o .= replace_macros($tpl, array(
 				'$img_hover' => t('Visit ') . $rr['name'] . t('\'s profile'),
@@ -277,7 +267,7 @@ function contacts_content(&$a) {
 				'$dir_icon' => $dir_icon,
 				'$thumb' => $rr['thumb'], 
 				'$name' => $rr['name'],
-				'$url' => (($direction != DIRECTION_OUT) ? "redir/{$rr['id']}" : $rr['url'] )
+				'$url' => (($rr['rel'] != DIRECTION_OUT) ? "redir/{$rr['id']}" : $rr['url'] )
 			));
 		}
 		$o .= '<div id="contact-edit-end"></div>';

@@ -14,6 +14,9 @@ function dfrn_poll_init(&$a) {
 		$type = $a->config['dfrn_poll_type'] = $_GET['type'];
 	if(x($_GET,'last_update'))
 		$last_update = $a->config['dfrn_poll_last_update'] = $_GET['last_update'];
+	$dfrn_version    = ((x($_GET,'dfrn_version'))    ? $_GET['dfrn_version']    : '1.0');
+	$destination_url = ((x($_GET,'destination_url')) ? $_GET['destination_url'] : '');
+
 
 	if(($dfrn_id == '') && (! x($_POST,'dfrn_id')) && ($a->argc > 1)) {
 		$o = get_feed_for($a,'*', $a->argv[1],$last_update);
@@ -25,8 +28,10 @@ function dfrn_poll_init(&$a) {
 
 		$r = q("SELECT `contact`.*, `user`.`nickname` 
 			FROM `contact` LEFT JOIN `user` ON `user`.`uid` = 1
-			WHERE `dfrn-id` = '%s' LIMIT 1",
-			dbesc($dfrn_id));
+			WHERE ( `dfrn-id` = '%s' OR ( `issued-id` = '%s' AND `duplex` = 1 )) LIMIT 1",
+			dbesc($dfrn_id),
+			dbesc($dfrn_id)
+		);
 		if(count($r)) {
 			$s = fetch_url($r[0]['poll'] . '?dfrn_id=' . $dfrn_id . '&type=profile-check');
 			if(strlen($s)) {
@@ -43,8 +48,8 @@ function dfrn_poll_init(&$a) {
 						dbesc($session_id)); 
 				}
 			}
-			$profile = ((strlen($r[0]['nickname'])) ? $r[0]['nickname'] : $r[0]['uid']);
-			goaway($a->get_baseurl() . "/profile/$profile/visit");
+			$profile = $r[0]['nickname'];
+			goaway((strlen($destination_url)) ? $destination_url : $a->get_baseurl() . '/profile/' . $profile);
 		}
 		goaway($a->get_baseurl());
 	}
@@ -54,8 +59,10 @@ function dfrn_poll_init(&$a) {
 		q("DELETE FROM `profile_check` WHERE `expire` < " . intval(time()));
 		$r = q("SELECT * FROM `profile_check` WHERE `dfrn_id` = '%s' ORDER BY `expire` DESC",
 			dbesc($dfrn_id));
-		if(count($r))
+		if(count($r)) {
 			xml_status(1);
+			return; // NOTREACHED
+		}
 		xml_status(0);
 		return; // NOTREACHED
 	}
@@ -86,10 +93,11 @@ function dfrn_poll_post(&$a) {
 		dbesc($challenge)
 	);
 
-
-	$r = q("SELECT * FROM `contact` WHERE `issued-id` = '%s' LIMIT 1",
+	$r = q("SELECT * FROM `contact` WHERE ( `issued-id` = '%s' OR ( `dfrn-id` = '%s' AND `duplex` = 1 )) LIMIT 1",
+		dbesc($dfrn_id),
 		dbesc($dfrn_id)
 	);
+
 	if(! count($r))
 		killme();
 
@@ -162,27 +170,35 @@ function dfrn_poll_content(&$a) {
 			dbesc($last_update)
 		);
 
-		$r = q("SELECT * FROM `contact` WHERE `issued-id` = '%s' AND `blocked` = 0 AND `pending` = 0 LIMIT 1",
-			dbesc($_GET['dfrn_id']));
-
-		if((count($r)) && (strlen($r[0]['prvkey']))) {
+		$r = q("SELECT * FROM `contact` WHERE ( `issued-id` = '%s' OR ( `dfrn-id` = '%s' AND `duplex` = 1 )) 
+			AND `blocked` = 0 AND `pending` = 0 LIMIT 1",
+			dbesc($_GET['dfrn_id']),
+			dbesc($_GET['dfrn_id'])
+		);
+		if(count($r)) {
 
 			$challenge = '';
-
-			openssl_private_encrypt($hash,$challenge,$r[0]['prvkey']);
-			$challenge = bin2hex($challenge);
-
 			$encrypted_id = '';
 			$id_str = $_GET['dfrn_id'] . '.' . mt_rand(1000,9999);
 
-			openssl_private_encrypt($id_str,$encrypted_id,$r[0]['prvkey']);
+
+			if($r[0]['duplex'] && strlen($r[0]['pubkey'])) {
+				openssl_public_encrypt($hash,$challenge,$r[0]['pubkey']);
+				openssl_public_encrypt($id_str,$encrypted_id,$r[0]['pubkey']);
+			}
+			else {
+				openssl_private_encrypt($hash,$challenge,$r[0]['prvkey']);
+				openssl_private_encrypt($id_str,$encrypted_id,$r[0]['prvkey']);
+			}
+
+			$challenge = bin2hex($challenge);
 			$encrypted_id = bin2hex($encrypted_id);
 		}
 		else {
-			$status = 1;     // key not found
+			$status = 1;
 		}
 
-		echo '<?xml version="1.0" encoding="UTF-8"?><dfrn_poll><status>' .$status . '</status><dfrn_id>' . $encrypted_id . '</dfrn_id>'
+		echo '<?xml version="1.0" encoding="UTF-8"?><dfrn_poll><status>' .$status . '</status><dfrn_version>2.0</dfrn_version><dfrn_id>' . $encrypted_id . '</dfrn_id>'
 			. '<challenge>' . $challenge . '</challenge></dfrn_poll>' . "\r\n" ;
 		session_write_close();
 		exit;		

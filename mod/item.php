@@ -28,7 +28,7 @@ function item_post(&$a) {
 	$profile_uid = ((x($_POST,'profile_uid')) ? intval($_POST['profile_uid']) : 0);
 
 	if(! can_write_wall($a,$profile_uid)) {
-		notice( t("Permission denied.") . EOL) ;
+		notice( t('Permission denied.') . EOL) ;
 		return;
 	}
 
@@ -40,38 +40,14 @@ function item_post(&$a) {
 	if(count($r))
 		$user = $r[0];
 
-	
-	$str_group_allow = '';
-	$group_allow = $_POST['group_allow'];
-	if(is_array($group_allow)) {
-		array_walk($group_allow,'sanitise_acl');
-		$str_group_allow = implode('',$group_allow);
-	}
+	$str_group_allow   = perms2str($_POST['group_allow']);
+	$str_contact_allow = perms2str($_POST['contact_allow']);
+	$str_group_deny    = perms2str($_POST['group_deny']);
+	$str_contact_deny  = perms2str($_POST['contact_deny']);
 
-	$str_contact_allow = '';
-	$contact_allow = $_POST['contact_allow'];
-	if(is_array($contact_allow)) {
-		array_walk($contact_allow,'sanitise_acl');
-		$str_contact_allow = implode('',$contact_allow);
-	}
-
-	$str_group_deny = '';
-	$group_deny = $_POST['group_deny'];
-	if(is_array($group_deny)) {
-		array_walk($group_deny,'sanitise_acl');
-		$str_group_deny = implode('',$group_deny);
-	}
-
-	$str_contact_deny = '';
-	$contact_deny = $_POST['contact_deny'];
-	if(is_array($contact_deny)) {
-		array_walk($contact_deny,'sanitise_acl');
-		$str_contact_deny = implode('',$contact_deny);
-	}
-
-	$title = notags(trim($_POST['title']));
-	$body = escape_tags(trim($_POST['body']));
-	$location = notags(trim($_POST['location']));
+	$title             = notags(trim($_POST['title']));
+	$body              = escape_tags(trim($_POST['body']));
+	$location          = notags(trim($_POST['location']));
 
 	if(! strlen($body)) {
 		notice( t('Empty post discarded.') . EOL );
@@ -127,18 +103,8 @@ function item_post(&$a) {
 
 	$notify_type = (($parent) ? 'comment-new' : 'wall-new' );
 
-	do {
-		$dups = false;
-		$hash = random_string();
 
-		$uri = "urn:X-dfrn:" . $a->get_hostname() . ':1:' . $hash;
-
-		$r = q("SELECT `id` FROM `item` WHERE `uri` = '%s' LIMIT 1",
-		dbesc($uri));
-		if(count($r))
-			$dups = true;
-	} while($dups == true);
-
+	$uri = item_new_uri($a->get_hostname(),$profile_uid);
 
 	$r = q("INSERT INTO `item` (`type`,`contact-id`,`owner-name`,`owner-link`,`owner-avatar`, 
 		`author-name`, `author-link`, `author-avatar`, `created`,

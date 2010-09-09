@@ -1,3 +1,4 @@
+
 <?php
 
 if(! function_exists('dfrn_request_init')) {
@@ -176,29 +177,10 @@ function dfrn_request_post(&$a) {
 			return;
 		}
 
-		// Is this an email-style DFRN locator?
+		// Canonicalise email-style profile locator
 
-		if(strstr($url,'@')) {
-			$username = substr($url,0,strpos($url,'@'));
-			$hostname = substr($url,strpos($url,'@') + 1);
-			require_once('Scrape.php');
+		$url = webfinger($url);
 
-		
-			$parms = scrape_meta('https://' . $url);
-			if((x($parms,'dfrn-template')) && strstr($parms['dfrn-template'],'%s')) {
-				$url = sprintf($parms['dfrn-template'],$username);
-			}
-			else {
-				$parms = scrape_meta('http://' . $url);
-				if((x($parms,'dfrn-template')) && strstr($parms['dfrn-template'],'%s')) {
-					$url = sprintf($parms['dfrn-template'],$username);
-				}
-				else {
-					$url = '';
-				}
-			}
-
-		}
 
 		if(! strlen($url)) {
 			notice(t("Unable to resolve your name at the provided location.") . EOL);			
@@ -231,13 +213,19 @@ function dfrn_request_post(&$a) {
 		}
 		else {
 	
+			if(! validate_url($url)) {
+				notice( t('Invalid profile URL.') . EOL);
+				goaway($a->get_baseurl() . '/' . $a->cmd);
+				return; // NOTREACHED
+			}
+			
 			require_once('Scrape.php');
 
 			$parms = scrape_dfrn($url);
 
 			if(! count($parms)) {
 				notice( t('Profile location is not valid or does not contain profile information.') . EOL );
-				killme();
+				goaway($a->get_baseurl() . '/' . $a->cmd);
 			}
 			else {
 				if(! x($parms,'fn'))
@@ -288,7 +276,7 @@ function dfrn_request_post(&$a) {
 	
 		}
 		if($r === false) {
-			notice( 'Failed to update contact record.' . EOL );
+			notice( t('Failed to update contact record.') . EOL );
 			return;
 		}
 
@@ -309,7 +297,7 @@ function dfrn_request_post(&$a) {
 
 		// "Homecoming" - send the requestor back to their site to record the introduction.
 
-		$dfrn_url = bin2hex($a->get_baseurl() . "/profile/$nickname");
+		$dfrn_url = bin2hex($a->get_baseurl() . '/profile/' . $nickname);
 		$aes_allow = ((function_exists('openssl_encrypt')) ? 1 : 0);
 
 		goaway($parms['dfrn-request'] . "?dfrn_url=$dfrn_url" . '&confirm_key=' . $hash . (($aes_allow) ? "&aes_allow=1" : ""));
@@ -388,7 +376,7 @@ function dfrn_request_content(&$a) {
 					$res = mail($r[0]['email'],
 						t("Introduction received at ") . $a->config['sitename'],
 						$email,
-						t('From: Administrator@') . $_SERVER[SERVER_NAME] );
+						'From: ' . t(Administrator') . '@' . $_SERVER[SERVER_NAME] );
 					// This is a redundant notification - no point throwing errors if it fails.
 				}
 			}

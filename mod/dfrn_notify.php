@@ -24,9 +24,11 @@ function dfrn_notify_post(&$a) {
 	// find the local user who owns this relationship.
 
 	$r = q("SELECT `contact`.*, `user`.* FROM `contact` LEFT JOIN `user` on `user`.`uid` = 1 
-		WHERE `issued-id` = '%s' LIMIT 1",
+		WHERE ( `issued-id` = '%s' OR ( `duplex` = 1 AND `dfrn-id` = '%s' )) LIMIT 1",
+		dbesc($dfrn_id),
 		dbesc($dfrn_id)
 	);
+
 	if(! count($r)) {
 		xml_status(3);
 		return; //NOTREACHED
@@ -183,39 +185,42 @@ function dfrn_notify_post(&$a) {
 				$datarray['contact-id'] = $importer['id'];
 				$posted_id = post_remote($a,$datarray);
 
-				$r = q("SELECT `parent` FROM `item` WHERE `id` = %d LIMIT 1",
-					intval($posted_id)
-				);
-				if(count($r)) {
-					$r1 = q("UPDATE `item` SET `last-child` = 0, `changed` = '%s' WHERE `parent` = %d",
-						dbesc(datetime_convert()),
-						intval($r[0]['parent'])
-					);
-				}
-				$r2 = q("UPDATE `item` SET `last-child` = 1, `changed` = '%s' WHERE `id` = %d LIMIT 1",
-						dbesc(datetime_convert()),
+				if($posted_id) {
+					$r = q("SELECT `parent` FROM `item` WHERE `id` = %d LIMIT 1",
 						intval($posted_id)
-				);
+					);
+					if(count($r)) {
+						$r1 = q("UPDATE `item` SET `last-child` = 0, `changed` = '%s' WHERE `parent` = %d",
+							dbesc(datetime_convert()),
+							intval($r[0]['parent'])
+						);
+					}
+					$r2 = q("UPDATE `item` SET `last-child` = 1, `changed` = '%s' WHERE `id` = %d LIMIT 1",
+							dbesc(datetime_convert()),
+							intval($posted_id)
+					);
 
-				$php_path = ((strlen($a->config['php_path'])) ? $a->config['php_path'] : 'php');
 
-				proc_close(proc_open("\"$php_path\" \"include/notifier.php\" \"comment-import\" \"$posted_id\" &", array(),$foo));
+					$php_path = ((strlen($a->config['php_path'])) ? $a->config['php_path'] : 'php');
 
-				if(($importer['notify-flags'] & NOTIFY_COMMENT) && (! $importer['self'])) {
-					require_once('bbcode.php');
-					$from = stripslashes($datarray['author-name']);
-					$tpl = file_get_contents('view/cmnt_received_eml.tpl');                 
-					$email_tpl = replace_macros($tpl, array(
-						'$sitename' => $a->config['sitename'],
-						'$siteurl' =>  $a->get_baseurl(),
-						'$username' => $importer['username'],
-						'$email' => $importer['email'],
-						'$from' => $from,
-						'$body' => strip_tags(bbcode(stripslashes($datarray['body'])))
-					));
+					proc_close(proc_open("\"$php_path\" \"include/notifier.php\" \"comment-import\" \"$posted_id\" &", array(),$foo));
 
-					$res = mail($importer['email'], $from . t(" commented on your item at ") . $a->config['sitename'],
-						$email_tpl,t("From: Administrator@") . $a->get_hostname() );
+					if(($importer['notify-flags'] & NOTIFY_COMMENT) && (! $importer['self'])) {
+						require_once('bbcode.php');
+						$from = stripslashes($datarray['author-name']);
+						$tpl = file_get_contents('view/cmnt_received_eml.tpl');                 
+						$email_tpl = replace_macros($tpl, array(
+							'$sitename' => $a->config['sitename'],
+							'$siteurl' =>  $a->get_baseurl(),
+							'$username' => $importer['username'],
+							'$email' => $importer['email'],
+							'$from' => $from,
+							'$body' => strip_tags(bbcode(stripslashes($datarray['body'])))
+						));
+
+						$res = mail($importer['email'], $from . t(" commented on your item at ") . $a->config['sitename'],
+							$email_tpl,t("From: Administrator@") . $a->get_hostname() );
+					}
 				}
 
 				xml_status(0);
@@ -332,27 +337,33 @@ function dfrn_notify_content(&$a) {
 			intval(time() + 60 )
 		);
 
-		$r = q("SELECT * FROM `contact` WHERE `issued-id` = '%s' AND `blocked` = 0 AND `pending` = 0 LIMIT 1",
-			dbesc($_GET['dfrn_id']));
-		if((! count($r)) || (! strlen($r[0]['prvkey'])))
+		$r = q("SELECT * FROM `contact` WHERE ( `issued-id` = '%s' OR ( `duplex` = 1 AND `dfrn-id` = '%s'))
+			AND `blocked` = 0 AND `pending` = 0 LIMIT 1",
+			dbesc($_GET['dfrn_id']),
+			dbesc($_GET['dfrn_id'])
+		);
+		if(! count($r))
 			$status = 1;
 
 		$challenge = '';
-
-		openssl_private_encrypt($hash,$challenge,$r[0]['prvkey']);
-		$challenge = bin2hex($challenge);
-
 		$encrypted_id = '';
 		$id_str = $_GET['dfrn_id'] . '.' . mt_rand(1000,9999);
 
-		openssl_private_encrypt($id_str,$encrypted_id,$r[0]['prvkey']);
+		if(($r[0]['duplex']) && strlen($r[0]['pubkey'])) {
+			openssl_public_encrypt($hash,$challenge,$r[0]['pubkey']);
+			openssl_public_encrypt($id_str,$encrypted_id,$r[0]['pubkey']);
+		}
+		else {
+			openssl_private_encrypt($hash,$challenge,$r[0]['prvkey']);
+			openssl_private_encrypt($id_str,$encrypted_id,$r[0]['prvkey']);
+		}
+
+		$challenge    = bin2hex($challenge);
 		$encrypted_id = bin2hex($encrypted_id);
 
-		echo '<?xml version="1.0" encoding="UTF-8"?><dfrn_notify><status>' .$status . '</status><dfrn_id>' . $encrypted_id . '</dfrn_id>'
-			. '<challenge>' . $challenge . '</challenge></dfrn_notify>' . "\r\n" ;
+		echo '<?xml version="1.0" encoding="UTF-8"?><dfrn_notify><status>' .$status . '</status><dfrn_version>2.0</dfrn_version><dfrn_id>' . $encrypted_id . '</dfrn_id>' . '<challenge>' . $challenge . '</challenge></dfrn_notify>' . "\r\n" ;
 		session_write_close();
 		exit;
-		
 	}
 
 }

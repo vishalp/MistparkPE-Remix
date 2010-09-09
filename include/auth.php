@@ -7,7 +7,6 @@ if((x($_SESSION,'authenticated')) && (! ($_POST['auth-params'] == 'login'))) {
 		unset($_SESSION['authenticated']);
 		unset($_SESSION['uid']);
 		unset($_SESSION['visitor_id']);
-		unset($_SESSION['is_visitor']);
 		unset($_SESSION['administrator']);
 		unset($_SESSION['cid']);
 		unset($_SESSION['theme']);
@@ -40,7 +39,6 @@ else {
 	unset($_SESSION['authenticated']);
 	unset($_SESSION['uid']);
 	unset($_SESSION['visitor_id']);
-	unset($_SESSION['is_visitor']);
 	unset($_SESSION['administrator']);
 	unset($_SESSION['cid']);
 	$encrypted = hash('whirlpool',trim($_POST['password']));

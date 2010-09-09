@@ -2,13 +2,10 @@
 
 
 function settings_init(&$a) {
-
-	if(! local_user()) {
-		notice( t('Permission denied.') . EOL);
-		return;
+	if(local_user()) {
+		require_once("mod/profile.php");
+		profile_load($a,$a->user['nickname']);
 	}
-	require_once("mod/profile.php");
-	profile_load($a,$a->user['nickname']);
 }
 
 
@@ -51,17 +48,15 @@ function settings_post(&$a) {
 		}
 	}
 
-	$theme = notags(trim($_POST['theme']));
-	$username = notags(trim($_POST['username']));
-	$email = notags(trim($_POST['email']));
-	$timezone = notags(trim($_POST['timezone']));
-	$defloc = notags(trim($_POST['defloc']));
+	$theme            = notags(trim($_POST['theme']));
+	$username         = notags(trim($_POST['username']));
+	$email            = notags(trim($_POST['email']));
+	$timezone         = notags(trim($_POST['timezone']));
+	$defloc           = notags(trim($_POST['defloc']));
 
-	if(x($_POST,'profile_in_directory'))
-		$publish = (($_POST['profile_in_directory'] == 1) ? 1: 0);
-	if(x($_POST,'profile_in_netdirectory'))
-		$net_publish = (($_POST['profile_in_netdirectory'] == 1) ? 1: 0);
-
+	$publish          = (($_POST['profile_in_directory'] == 1) ? 1: 0);
+	$net_publish      = (($_POST['profile_in_netdirectory'] == 1) ? 1: 0);
+	$old_visibility   = ((intval($_POST['visibility']) == 1) ? 1 : 0);
 
 	$notify = 0;
 
@@ -112,35 +107,10 @@ function settings_post(&$a) {
 			date_default_timezone_set($timezone);
 	}
 
-	$str_group_allow = '';
-	$group_allow = $_POST['group_allow'];
-	if(is_array($group_allow)) {
-		array_walk($group_allow,'sanitise_acl');
-		$str_group_allow = implode('',$group_allow);
-	}
-
-	$str_contact_allow = '';
-	$contact_allow = $_POST['contact_allow'];
-	if(is_array($contact_allow)) {
-		array_walk($contact_allow,'sanitise_acl');
-		$str_contact_allow = implode('',$contact_allow);
-	}
-
-	$str_group_deny = '';
-	$group_deny = $_POST['group_deny'];
-	if(is_array($group_deny)) {
-		array_walk($group_deny,'sanitise_acl');
-		$str_group_deny = implode('',$group_deny);
-	}
-
-	$str_contact_deny = '';
-	$contact_deny = $_POST['contact_deny'];
-	if(is_array($contact_deny)) {
-		array_walk($contact_deny,'sanitise_acl');
-		$str_contact_deny = implode('',$contact_deny);
-	}
-
-	$old_visibility = ((intval($_POST['visibility']) == 1) ? 1 : 0);
+	$str_group_allow   = perms2str($_POST['group_allow']);
+	$str_contact_allow = perms2str($_POST['contact_allow']);
+	$str_group_deny    = perms2str($_POST['group_deny']);
+	$str_contact_deny  = perms2str($_POST['contact_deny']);
 
 	$r = q("UPDATE `user` SET `username` = '%s', `email` = '%s', `timezone` = '%s',  `allow_cid` = '%s', `allow_gid` = '%s', `deny_cid` = '%s', `deny_gid` = '%s', `notify-flags` = %d, `default-location` = '%s', `theme` = '%s'  WHERE `uid` = %d LIMIT 1",
 			dbesc($username),
@@ -218,15 +188,14 @@ function settings_content(&$a) {
 	$theme_selector .= '</select>';
 
 
-
 	$profile_in_dir = '';
 
 	if(strlen(get_config('system','directory_submit_url'))) {
 		$opt_tpl = file_get_contents("view/profile-in-netdir.tpl");
 
 		$profile_in_net_dir = replace_macros($opt_tpl,array(
-			'$yes_selected' => (($profile['net-publish']) ? " checked=\"checked\" " : ""),
-			'$no_selected' => (($profile['net-publish'] == 0) ? " checked=\"checked\" " : "")
+			'$yes_selected' => (($profile['net-publish'])      ? " checked=\"checked\" " : ""),
+			'$no_selected'  => (($profile['net-publish'] == 0) ? " checked=\"checked\" " : "")
 		));
 	}
 	else

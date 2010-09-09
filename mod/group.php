@@ -5,9 +5,10 @@ function validate_members(&$item) {
 }
 
 function group_init(&$a) {
-	require_once('include/group.php');
-	$a->page['aside'] = group_side();
-
+	if(local_user()) {
+		require_once('include/group.php');
+		$a->page['aside'] = group_side();
+	}
 }
 
 
@@ -70,9 +71,8 @@ function group_post(&$a) {
 		}
 		if($result)
 			notice( t('Membership list updated.') . EOL);
-	$a->page['aside'] = group_side();
+		$a->page['aside'] = group_side();
 	}
-	
 }
 
 function group_content(&$a) {
@@ -84,10 +84,7 @@ function group_content(&$a) {
 
 	if(($a->argc == 2) && ($a->argv[1] == 'new')) {
 		$tpl = file_get_contents('view/group_new.tpl');
-		$o .= replace_macros($tpl,array(
-
-		));
-
+		$o .= replace_macros($tpl,array());
 	}
 		
         if(($a->argc == 3) && ($a->argv[1] == 'drop')) {

@@ -49,9 +49,6 @@ function profile_init(&$a) {
 		return;
 	}
 
-	if((remote_user()) && ($a->argc > 2) && ($a->argv[2] == 'visit'))
-		$_SESSION['is_visitor'] = 1;
-
 	$profile = 0;
 	if((local_user()) && ($a->argc > 2) && ($a->argv[2] == 'view')) {
 		$which = $a->user['nickname'];

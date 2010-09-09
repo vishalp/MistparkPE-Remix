@@ -42,22 +42,11 @@ if(strlen($a->module)) {
 	}
 	else {
 		header($_SERVER["SERVER_PROTOCOL"] . ' 404 ' . t('Not Found'));
-		notice( t('Page not found' ) . EOL);
+		notice( t('Page not found.' ) . EOL);
 	}
 }
 
 // invoke module functions
-// Important: Modules normally do not emit content, unless you need it for debugging.
-// The module_init, module_post, and module_afterpost functions process URL parameters and POST processing.
-// The module_content function returns content text to this file where it is included on the page.
-// Modules emitting XML/Atom, etc. should do so directly and promptly exit before the HTML page can be rendered.
-// "Most" HTML resides in the view directory as text templates with macro substitution. 
-// They look like HTML with PHP variables but only a couple pass through the PHP processor - those with .php extensions.
-// The macro substitution is defined per page for the .tpl files. 
-// Information transfer between module functions can be accomplished via the App session '$a' and its related variables.
-// x() queries both a variable's existence and that it is "non-zero" or "non-empty" depending on how it is called. 
-// q() is the SQL query form. All query string (%s) variables MUST be passed through dbesc(). 
-// All query int values MUST be cast to integer using intval(); 
 
 if($a->module_loaded) {
 	$a->page['page_title'] = $a->module;

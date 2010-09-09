@@ -2,7 +2,7 @@
 
 set_time_limit(0);
 
-define ( 'BUILD_ID', 1000 );
+define ( 'BUILD_ID', 1001 );
 
 define ( 'EOL', "<br />\r\n");
 
@@ -21,7 +21,24 @@ define ( 'NOTIFY_WALL',    0x0004 );
 define ( 'NOTIFY_COMMENT', 0x0008 );
 define ( 'NOTIFY_MAIL',    0x0010 );
 
-define ( 'NAMESPACE_DFRN' , 'http://purl.org/macgirvin/dfrn/1.0' ); 
+define ( 'NAMESPACE_DFRN' ,      'http://purl.org/macgirvin/dfrn/1.0' ); 
+define ( 'NAMESPACE_ACTIVITY',   'http://activitystrea.ms/spec/1.0/' );
+define ( 'NAMESPACE_ACTIVITY_SCHEMA', 'http://activitystrea.ms/schema/1.0/');
+define ( 'ACTIVITY_LIKE',        NAMESPACE_ACTIVITY_SCHEMA . 'like' );
+define ( 'ACTIVITY_FRIEND',      NAMESPACE_ACTIVITY_SCHEMA . 'make-friend' );
+define ( 'ACTIVITY_POST',        NAMESPACE_ACTIVITY_SCHEMA . 'post' );
+define ( 'ACTIVITY_UPDATE',      NAMESPACE_ACTIVITY_SCHEMA . 'update' );
+
+define ( 'ACTIVITY_OBJ_COMMENT', NAMESPACE_ACTIVITY_SCHEMA . 'comment' );
+define ( 'ACTIVITY_OBJ_NOTE',    NAMESPACE_ACTIVITY_SCHEMA . 'note' );
+define ( 'ACTIVITY_OBJ_PERSON',  NAMESPACE_ACTIVITY_SCHEMA . 'person' );
+define ( 'ACTIVITY_OBJ_PHOTO',   NAMESPACE_ACTIVITY_SCHEMA . 'photo' );
+define ( 'ACTIVITY_OBJ_P_PHOTO', NAMESPACE_ACTIVITY_SCHEMA . 'profile-photo' );
+define ( 'ACTIVITY_OBJ_ALBUM',   NAMESPACE_ACTIVITY_SCHEMA . 'photo-album' );
+
+
+define ( 'ACTIVITY_OBJ_HEART',    NAMESPACE_DFRN     . '/heart' );
+
 
 
 if(! class_exists('App')) {
@@ -580,8 +597,11 @@ function get_config($family,$key,$instore = false) {
 
 	global $a;
 	if(! $instore) {
-		if(isset($a->config[$family][$key]))
+		if(isset($a->config[$family][$key])) {
+			if($a->config[$family][$key] == '!<unset>!')
+				return false;
 			return $a->config[$family][$key];
+		}
 	}
 	$ret = q("SELECT `v` FROM `config` WHERE `cat` = '%s' AND `k` = '%s' LIMIT 1",
 		dbesc($family),
@@ -591,7 +611,11 @@ function get_config($family,$key,$instore = false) {
 		$a->config[$family][$key] = $ret[0]['v'];
 		return $ret[0]['v'];
 	}
+	else {
+		$a->config[$family][$key] = '!<unset>!';
+	}
 	return false;
+
 }}
 
 if(! function_exists('set_config')) {
@@ -619,4 +643,145 @@ function set_config($family,$key,$value) {
 		return $value;
 	return $ret;
 }}
+
+if(! function_exists('convert_xml_element_to_array')) {
+function convert_xml_element_to_array($xml_element, &$recursion_depth=0) {
+
+        // If we're getting too deep, bail out
+        if ($recursion_depth > 512) {
+                return(null);
+        }
+
+        if (!is_string($xml_element) &&
+        !is_array($xml_element) &&
+        (get_class($xml_element) == 'SimpleXMLElement')) {
+                $xml_element_copy = $xml_element;
+                $xml_element = get_object_vars($xml_element);
+        }
+
+        if (is_array($xml_element)) {
+                $result_array = array();
+                if (count($xml_element) <= 0) {
+                        return (trim(strval($xml_element_copy)));
+                }
+
+                foreach($xml_element as $key=>$value) {
+
+                        $recursion_depth++;
+                        $result_array[strtolower($key)] =
+                convert_xml_element_to_array($value, $recursion_depth);
+                        $recursion_depth--;
+                }
+                if ($recursion_depth == 0) {
+                        $temp_array = $result_array;
+                        $result_array = array(
+                                strtolower($xml_element_copy->getName()) => $temp_array,
+                        );
+                }
+
+                return ($result_array);
+
+        } else {
+                return (trim(strval($xml_element)));
+        }
+}}
+
+
+if(! function_exists('webfinger')) {
+function webfinger($s) {
+	if(! strstr($s,'@')) {
+		return $s;
+	}
+	$host = substr($s,strpos($s,'@') + 1);
+	$url = 'http://' . $host . '/.well-known/host-meta' ;
+	$xml = fetch_url($url);
+	if (! $xml)
+		return '';
+	$h = simplexml_load_string($xml);
+	$arr = convert_xml_element_to_array($h);
+
+	if(! isset($arr['xrd']['link']))
+		return '';
+
+	$link = $arr['xrd']['link'];
+	if(! isset($link[0]))
+		$links = array($link);
+	else
+		$links = $link;
+
+	foreach($links as $link)
+		if($link['@attributes']['rel'] && $link['@attributes']['rel'] == 'lrdd')
+			$tpl = $link['@attributes']['template'];
+	if((empty($tpl)) || (! strpos($tpl, '{uri}')))
+		return '';
+
+	$pxrd = str_replace('{uri}', urlencode('acct://'.$s), $tpl);
+
+	$xml = fetch_url($pxrd);
+	if (! $xml)
+		return '';
+	$h = simplexml_load_string($xml);
+	$arr = convert_xml_element_to_array($h);
+
+	if(! isset($arr['xrd']['link']))
+		return '';
+
+	$link = $arr['xrd']['link'];
+	if(! isset($link[0]))
+		$links = array($link);
+	else
+		$links = $link;
+
+	foreach($links as $link)
+		if($link['@attributes']['rel'] == NAMESPACE_DFRN)
+			return $link['@attributes']['href'];
+	return '';
+}}
+
+if(! function_exists('perms2str')) {
+function perms2str($p) {
+	$ret = '';
+	$tmp = $p;
+	if(is_array($tmp)) {
+		array_walk($tmp,'sanitise_acl');
+		$ret = implode('',$tmp);
+	}
+	return $ret;
+}}
+
+if(! function_exists('item_new_uri')) {
+function item_new_uri($hostname,$uid) {
+
+	do {
+		$dups = false;
+		$hash = random_string();
+
+		$uri = "urn:X-dfrn:" . $hostname . ':' . $uid . ':' . $hash;
+
+		$r = q("SELECT `id` FROM `item` WHERE `uri` = '%s' LIMIT 1",
+			dbesc($uri));
+		if(count($r))
+			$dups = true;
+	} while($dups == true);
+	return $uri;
+}}
+
+if(! function_exists('get_uid')) {
+function get_uid() {
+	return ((x($_SESSION,'uid')) ? intval($_SESSION['uid']) : 0) ;
+}}
+
+if(! function_exists('validate_url')) {
+function validate_url($url) {
+	if(substr($url,0,4) != 'http')
+		$url = 'http://' . $url;
+	$h = parse_url($url);
+
+	if(! $h)
+		return false;
+	if(! checkdnsrr($h['host'], 'ANY'))
+		return false;
+	return true;
+}}
+
 

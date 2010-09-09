@@ -10,9 +10,12 @@ function dfrn_confirm_post(&$a) {
 		// We are processing an external confirmation to an introduction created by our user.
 
 		$public_key = $_POST['public_key'];
-		$dfrn_id = $_POST['dfrn_id'];
+		$dfrn_id    = $_POST['dfrn_id'];
 		$source_url = $_POST['source_url'];
-		$aes_key = $_POST['aes_key'];
+		$aes_key    = $_POST['aes_key'];
+		$duplex     = $_POST['duplex'];
+		$version_id = $_POST['dfrn_version'];
+
 
 		// Find our user's account
 
@@ -21,15 +24,15 @@ function dfrn_confirm_post(&$a) {
 
 		if(! count($r)) {
 			xml_status(3); // failure
+			return; // NOTREACHED
 		}
 
 		$my_prvkey = $r[0]['prvkey'];
 		$local_uid = $r[0]['uid'];
 
-		$decrypted_source_url = "";
-
 		// verify everything
 
+		$decrypted_source_url = "";
 		openssl_private_decrypt($source_url,$decrypted_source_url,$my_prvkey);
 
 
@@ -40,10 +43,11 @@ function dfrn_confirm_post(&$a) {
 		if(! count($ret)) {
 			// this is either a bogus confirmation or we deleted the original introduction.
 			xml_status(3); 
+			return; // NOTREACHED
 		}
 
 
-		$relation = $r[0]['rel'];
+		$relation = $ret[0]['rel'];
 	
 		// Decrypt all this stuff we just received
 
@@ -63,14 +67,17 @@ function dfrn_confirm_post(&$a) {
 
 		$r = q("SELECT * FROM `contact` WHERE `dfrn-id` = '%s' LIMIT 1",
 			dbesc($decrypted_dfrn_id),
-			intval($local_uid));
-		if(count($r))
+			intval($local_uid)
+		);
+		if(count($r)) {
 			xml_status(1); // Birthday paradox - duplicate dfrn-id
-
+			return; // NOTREACHED
+		}
 		$r = q("UPDATE `contact` SET `dfrn-id` = '%s', `pubkey` = '%s' WHERE `id` = %d LIMIT 1",
 			dbesc($decrypted_dfrn_id),
 			dbesc($dfrn_pubkey),
-			intval($dfrn_record));
+			intval($dfrn_record)
+		);
 		if($r) {
 
 			// We're good but now we have to scrape the profile photo and send notifications.
@@ -117,14 +124,30 @@ function dfrn_confirm_post(&$a) {
 				$thumb = $a->get_baseurl() . '/images/default-profile-sm.jpg';
 			}
 
-			$r = q("UPDATE `contact` 
-				SET `photo` = '%s', `thumb` = '%s', `rel` = %d, `name-date` = '%s', `uri-date` = '%s', `avatar-date` = '%s', `blocked` = 0, `pending` = 0, `network` = 'dfrn' WHERE `id` = %d LIMIT 1",
+			$new_relation = DIRECTION_OUT;
+			if(($relation == DIRECTION_IN) || ($duplex))
+				$new_relation = DIRECTION_BOTH;
+
+
+			$r = q("UPDATE `contact` SET 
+				`photo` = '%s',
+				`thumb` = '%s',
+				`rel` = %d,
+				`name-date` = '%s',
+				`uri-date` = '%s',
+				`avatar-date` = '%s',
+				`blocked` = 0,
+				`pending` = 0,
+				`duplex` = %d
+				`network` = 'dfrn' WHERE `id` = %d LIMIT 1
+			",
 				dbesc($photo),
 				dbesc($thumb),
-				intval(($relation == DIRECTION_IN) ? DIRECTION_BOTH : DIRECTION_OUT),
+				intval($newrelation),
 				dbesc(datetime_convert()),
 				dbesc(datetime_convert()),
 				dbesc(datetime_convert()),
+				intval($duplex),
 				intval($dfrn_record)
 			);
 			if($r === false)
@@ -135,7 +158,8 @@ function dfrn_confirm_post(&$a) {
 
 			$r = q("SELECT * FROM `contact` LEFT JOIN `user` ON `user`.`uid` = 1
 				WHERE `contact`.`id` = %d LIMIT 1",
-				intval($dfrn_record));
+				intval($dfrn_record)
+			);
 			if((count($r)) && ($r[0]['notify-flags'] & NOTIFY_CONFIRM)) {
 
 				$tpl = file_get_contents('view/intro_complete_eml.tpl');
@@ -150,13 +174,12 @@ function dfrn_confirm_post(&$a) {
 				));
 	
 				$res = mail($r[0]['email'], t("Introduction accepted at ") . $a->config['sitename'],
-					$email_tpl,t("From: Administrator@") . $_SERVER[SERVER_NAME] );
+					$email_tpl, 'From: ' . t('Administrator') . '@' . $_SERVER[SERVER_NAME] );
 				if(!$res) {
 					notice( t("Email notification failed.") . EOL );
 				}
 			}
 			xml_status(0); // Success
-
 			return; // NOTREACHED
 		}
 		else {
@@ -170,30 +193,32 @@ function dfrn_confirm_post(&$a) {
 
 		// We are processing a local confirmation initiated on this system by our user to an external introduction.
 
-		$uid = $_SESSION['uid'];
+		$uid = get_uid();
 
 		if(! $uid) {
 			notice( t("Permission denied.") . EOL );
 			return;
 		}	
 	
-		$dfrn_id = ((x($_POST,'dfrn_id')) ? notags(trim($_POST['dfrn_id'])) : "");
+		$dfrn_id  = ((x($_POST,'dfrn_id')) ? notags(trim($_POST['dfrn_id'])) : "");
 		$intro_id = intval($_POST['intro_id']);
+		$duplex   = intval($_POST['duplex']);
 
 		$r = q("SELECT * FROM `contact` WHERE `issued-id` = '%s' LIMIT 1",
 				dbesc($dfrn_id)
 		);
 
-		if((! $r) || (! count($r))) {
+		if(! count($r)) {
 			notice( t('Node does not exist.') . EOL );
 			return;
 		}
 
-		$contact_id = $r[0]['id'];
-		$relation = $r[0]['rel'];
-		$site_pubkey = $r[0]['site-pubkey'];
+		$contact_id   = $r[0]['id'];
+		$relation     = $r[0]['rel'];
+		$site_pubkey  = $r[0]['site-pubkey'];
 		$dfrn_confirm = $r[0]['confirm'];
-		$aes_allow = $r[0]['aes_allow'];
+		$aes_allow    = $r[0]['aes_allow'];
+
 
 		$res=openssl_pkey_new(array(
         		'digest_alg' => 'whirlpool',
@@ -219,7 +244,8 @@ function dfrn_confirm_post(&$a) {
 		$params = array();
 
 		$src_aes_key = random_string();
-		$result = "";
+
+		$result = '';
 
 		openssl_private_encrypt($dfrn_id,$result,$a->user['prvkey']);
 
@@ -233,6 +259,10 @@ function dfrn_confirm_post(&$a) {
 			openssl_public_encrypt($src_aes_key, $params['aes_key'], $site_pubkey);
 			$params['public_key'] = openssl_encrypt($public_key,'AES-256-CBC',$src_aes_key);
 		}
+
+		$params['dfrn_version'] = '2.0';
+		if($duplex == 1)
+			$params['duplex'] = 1;
 
 		$res = post_url($dfrn_confirm,$params);
 
@@ -323,10 +353,25 @@ function dfrn_confirm_post(&$a) {
 			$thumb = $a->get_baseurl() . '/images/default-profile-sm.jpg';
 		}
 
-		$r = q("UPDATE `contact` SET `photo` = '%s', `thumb` = '%s', `rel` = %d, `name-date` = '%s', `uri-date` = '%s', `avatar-date` = '%s', `blocked` = 0, `pending` = 0, `network` = 'dfrn' WHERE `id` = %d LIMIT 1",
+		$new_relation = DIRECTION_IN;
+		if(($relation == DIRECTION_OUT) || ($duplex))
+			$new_relation = DIRECTION_BOTH;
+
+
+		$r = q("UPDATE `contact` SET 
+			`photo` = '%s', 
+			`thumb` = '%s', 
+			`rel` = %d, 
+			`name-date` = '%s', 
+			`uri-date` = '%s', 
+			`avatar-date` = '%s', 
+			`blocked` = 0, 
+			`pending` = 0, 
+			`network` = 'dfrn' WHERE `id` = %d LIMIT 1
+		",
 			dbesc($photo),
 			dbesc($thumb),
-			intval(($relation == DIRECTION_OUT) ? DIRECTION_BOTH : DIRECTION_IN),
+			intval($newrelation),
 			dbesc(datetime_convert()),
 			dbesc(datetime_convert()),
 			dbesc(datetime_convert()),
@@ -337,8 +382,6 @@ function dfrn_confirm_post(&$a) {
 
 		goaway($a->get_baseurl() . '/contacts/' . intval($contact_id));
 		return;  //NOTREACHED
-
 	}
-
 	return;
 }
