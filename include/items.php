@@ -300,6 +300,13 @@ function get_atom_elements($item) {
 function post_remote($a,$arr) {
 
 
+	if($arr['gravity'])
+		$arr['gravity = intval($arr['gravity']);
+	elseif($arr['parent-uri'] == $arr['uri'])
+		$arr['gravity'] = 0;
+	else($arr['verb'] == ACTIVITY_POST)
+		$arr['gravity'] = 6;
+
 	if(! x($arr,'type'))
 		$arr['type'] = 'remote';
 	$arr['wall'] = ((intval($arr['wall'])) ? 1 : 0);
