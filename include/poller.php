@@ -131,46 +131,79 @@
 		$feed->enable_order_by_date(false);
 		$feed->init();
 
-		$photo_rawupdate = $feed->get_feed_tags(NAMESPACE_DFRN,'icon-updated');
-		if($photo_rawupdate) {
-			$photo_timestamp = datetime_convert('UTC','UTC',$photo_rawupdate[0]['data']);
-			$photo_url = $feed->get_image_url();
-			if(strlen($photo_url) && $photo_timestamp > $contact['avatar-date']) {
 
-				require_once("Photo.php");
 
-				$photo_failure = false;
+		// Check at the feed level for updated contact name and/or photo
 
-				$r = q("SELECT `resource-id` FROM `photo` WHERE `contact-id` = %d LIMIT 1",
-					intval($contact['id'])
-				);
-				if(count($r)) {
-					$resource_id = $r[0]['resource-id'];
-					$img_str = fetch_url($photo_url,true);
-					$img = new Photo($img_str);
-					if($img) {
-						q("DELETE FROM `photo` WHERE `resource-id` = '%s' AND contact-id` = %d ",
-							dbesc($resource_id),
+		$name_updated  = '';
+		$new_name = '';
+		$photo_timestamp = '';
+		$photo_url = '';
+
+		$rawtags = $feed->get_feed_tags( SIMPLEPIE_NAMESPACE_ATOM_10, author);
+		if($rawtags) {
+			$elems = $rawtags[0]['child'][SIMPLEPIE_NAMESPACE_ATOM_10];
+			if($elems['name'][0]['attribs'][NAMESPACE_DFRN]['updated']) {
+				$name_updated = $elems['name'][0]['attribs'][NAMESPACE_DFRN]['updated'];
+				$new_name = $elems['name'][0]['data'];
+			} 
+			if(($elems['link'][0]['attribs']['']['rel'] == 'photo') && ($elems['link'][0]['attribs'][NAMESPACE_DFRN]['updated'])) {
+				$photo_timestamp = datetime_convert('UTC','UTC',$elems['link'][0]['attribs'][NAMESPACE_DFRN]['updated']);
+				$photo_url = $elems['link'][0]['attribs']['']['href'];
+			}
+		}
+
+		if(! $photo_timestamp) {
+			$photo_rawupdate = $feed->get_feed_tags(NAMESPACE_DFRN,'icon-updated');
+			if($photo_rawupdate) {
+				$photo_timestamp = datetime_convert('UTC','UTC',$photo_rawupdate[0]['data']);
+				$photo_url = $feed->get_image_url();
+			}
+		}
+		if(($photo_timestamp) && (strlen($photo_url)) && ($photo_timestamp > $contact['avatar-date'])) {
+			require_once("Photo.php");
+
+			$photo_failure = false;
+
+			$r = q("SELECT `resource-id` FROM `photo` WHERE `contact-id` = %d LIMIT 1",
+				intval($contact['id'])
+			);
+			if(count($r)) {
+				$resource_id = $r[0]['resource-id'];
+				$img_str = fetch_url($photo_url,true);
+				$img = new Photo($img_str);
+				if($img) {
+					q("DELETE FROM `photo` WHERE `resource-id` = '%s' AND contact-id` = %d ",
+						dbesc($resource_id),
+						intval($contact['id'])
+					);
+
+					$img->scaleImageSquare(175);
+				
+					$hash = $resource_id;
+					$r = $img->store($contact['id'], $hash, basename($photo_url), t('Contact Photos') , 4);
+					
+					$img->scaleImage(80);
+					$r = $img->store($contact['id'], $hash, basename($photo_url), t('Contact Photos') , 5);
+					if($r)
+						q("UPDATE `contact` SET `avatar-date` = '%s' WHERE `id` = %d LIMIT 1",
+							dbesc(datetime_convert()),
 							intval($contact['id'])
 						);
-
-						$img->scaleImageSquare(175);
-					
-						$hash = $resource_id;
-
-						$r = $img->store($contact['id'], $hash, basename($photo_url), t('Contact Photos') , 4);
-					
-						$img->scaleImage(80);
-						$r = $img->store($contact['id'], $hash, basename($photo_url), t('Contact Photos') , 5);
-						if($r)
-							q("UPDATE `contact` SET `avatar-date` = '%s' WHERE `id` = %d LIMIT 1",
-								dbesc(datetime_convert()),
-								intval($contact['id'])
-							);
-					}
 				}
 			}
 		}
+
+		if(($name_updated) && (strlen($new_name)) && ($name_updated > $contact['name-date'])) {
+			q("UPDATE `contact` SET `name` = '%s', `name-date` = '%s' WHERE `id` = %d LIMIT 1",
+				dbesc(notags(trim($new_name))),
+				dbesc(datetime_convert()),
+				intval($contact['id'])
+			);
+		}
+
+		// Now process the feed
+
 
 		
 		foreach($feed->get_items() as $item) {
