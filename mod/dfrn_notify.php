@@ -180,6 +180,7 @@ function dfrn_notify_post(&$a) {
 			if($feed->get_item_quantity() == 1) {
 				// remote reply to our post. Import and then notify everybody else.
 				$datarray = get_atom_elements($item);
+				$datarray['wall'] = 1;
 				$datarray['type'] = 'remote-comment';
 				$datarray['parent-uri'] = $parent_uri;
 				$datarray['contact-id'] = $importer['id'];

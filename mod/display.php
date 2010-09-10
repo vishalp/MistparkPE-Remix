@@ -90,16 +90,18 @@ function display_content(&$a) {
 		FROM `item` LEFT JOIN `contact` ON `contact`.`id` = `item`.`contact-id`
 		WHERE `item`.`visible` = 1 AND `item`.`deleted` = 0
 		AND `contact`.`blocked` = 0 AND `contact`.`pending` = 0
-		AND `item`.`parent` = ( SELECT `parent` FROM `item` WHERE `id` = %d )
+		AND `item`.`parent` = ( SELECT `parent` FROM `item` WHERE ( `id` = '%s' OR `uri` = '%s' )
 		$sql_extra
 		ORDER BY `parent` DESC, `id` ASC ",
-		intval($item_id)
+		dbesc($item_id),
+		dbesc($item_id)
 	);
 
 
 	$cmnt_tpl = file_get_contents('view/comment_item.tpl');
 
 	$tpl = file_get_contents('view/wall_item.tpl');
+	$wallwall = file_get_contents('view/wallwall_item.tpl');
 
 	$return_url = $_SESSION['return_url'] = $a->cmd;
 
@@ -183,6 +185,9 @@ function display_content(&$a) {
 				'$ago' => relative_date($item['created']),
 				'$location' => (($item['location']) ? '<a target="map" href="http://maps.google.com/?q=' . urlencode($item['location']) . '">' . $item['location'] . '</a>' : ''),
 				'$indent' => (($item['parent'] != $item['item_id']) ? ' comment' : ''),
+				'$owner_url' => $owner_url,
+				'$owner_photo' => $owner_photo,
+				'$owner_name' => $owner_name,
 				'$drop' => $drop,
 				'$comment' => $comment
 			));

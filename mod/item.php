@@ -101,16 +101,21 @@ function item_post(&$a) {
 		}
 	}
 
+	$wall = 0;
+	if($post_type == 'wall' || $post_type == 'wall-comment')
+		$wall = 1;
+
 	$notify_type = (($parent) ? 'comment-new' : 'wall-new' );
 
 
 	$uri = item_new_uri($a->get_hostname(),$profile_uid);
 
-	$r = q("INSERT INTO `item` (`type`,`contact-id`,`owner-name`,`owner-link`,`owner-avatar`, 
+	$r = q("INSERT INTO `item` (`type`,`wall`,`contact-id`,`owner-name`,`owner-link`,`owner-avatar`, 
 		`author-name`, `author-link`, `author-avatar`, `created`,
 		`edited`, `changed`, `uri`, `title`, `body`, `location`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`)
-		VALUES( '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
+		VALUES( '%s', %d, %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
 		dbesc($post_type),
+		intval($wall),
 		intval($contact_id),
 		dbesc($contact_record['name']),
 		dbesc($contact_record['url']),
