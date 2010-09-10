@@ -32,7 +32,8 @@ function get_feed_for(&$a, $dfrn_id, $owner_id, $last_update) {
 
 	if($dfrn_id != '*') {
 
-		$r = q("SELECT * FROM `contact` WHERE `issued-id` = '%s' LIMIT 1",
+		$r = q("SELECT * FROM `contact` WHERE ( `issued-id` = '%s' OR ( `duplex` = 1 AND `dfrn-id` = '%s' )) LIMIT 1",
+			dbesc($dfrn_id),
 			dbesc($dfrn_id)
 		);
 		if(! count($r))
