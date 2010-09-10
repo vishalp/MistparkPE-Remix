@@ -188,11 +188,12 @@ function photos_post(&$a) {
 
 			$uri = item_new_uri($a->get_hostname(),get_uid());
 
-			$r = q("INSERT INTO `item` (`type`, `resource-id`, `contact-id`,
+			$r = q("INSERT INTO `item` (`type`, `wall`, `resource-id`, `contact-id`,
 				`owner-name`,`owner-link`,`owner-avatar`, `created`,
 				`edited`, `changed`, `uri`, `parent-uri`, `title`, `body`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`)
-				VALUES( '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
+				VALUES( '%s', %d, '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )",
 				dbesc('photo'),
+				intval(1),
 				dbesc($p[0]['resource-id']),			
 				intval($contact_record['id']),
 				dbesc($contact_record['name']),
@@ -321,10 +322,11 @@ function photos_post(&$a) {
 
 	$uri = item_new_uri($a->get_hostname(), get_uid());
 
-	$r = q("INSERT INTO `item` (`type`, `resource-id`, `contact-id`,`owner-name`,`owner-link`,`owner-avatar`, `created`,
+	$r = q("INSERT INTO `item` (`type`, `wall`, `resource-id`, `contact-id`,`owner-name`,`owner-link`,`owner-avatar`, `created`,
 		`edited`, `changed`, `uri`, `parent-uri`, `title`, `body`, `allow_cid`, `allow_gid`, `deny_cid`, `deny_gid`, `visible`)
-		VALUES( '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d )",
+		VALUES( '%s', %d, '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d )",
 		dbesc('photo'),
+		intval(1),
 		dbesc($photo_hash),			
 		intval($contact_record['id']),
 		dbesc($contact_record['name']),
